@@ -1,17 +1,21 @@
 {
-  "name": "brtools",
-  "version": "0.0.1",
+  "name": "@joaoseixas/brtools",
+  "version": "0.1.0",
   "description": "A CLI tool to help you with your daily tasks",
-  "main": "dist/index.js",
   "bin": {
-    "tools": "dist/index.js"
+    "brtools": "dist/index.js"
   },
   "scripts": {
     "build": "tsc"
   },
-  "keywords": [],
+  "keywords": [
+    "cli",
+    "brasil",
+    "cpf",
+    "utils"
+  ],
   "author": "Joao Seixas",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "clipboardy": "^4.0.0",
     "commander": "^14.0.0"
