@@ -1,5 +1,5 @@
 {
-  "name": "@joaoseixas/brtools",
+  "name": "brtools",
   "version": "0.0.1",
   "description": "A CLI tool to help you with your daily tasks",
   "main": "dist/index.js",
