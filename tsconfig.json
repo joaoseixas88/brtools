@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "module": "CommonJS", // ou ESNext, se for ESM
+    "outDir": "./dist",
+    "rootDir": "./src"
+  }
+}
