@@ -1,9 +1,12 @@
 {
   "compilerOptions": {
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "module": "CommonJS", // ou ESNext, se for ESM
+    "target": "ES2020",
+    "module": "CommonJS",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "lib": ["ES2020"]
   }
 }
