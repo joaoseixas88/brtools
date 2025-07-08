@@ -7,12 +7,14 @@
     "tools": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepare": "npm run build"
   },
   "keywords": [],
   "author": "Joao Seixas",
   "license": "ISC",
   "dependencies": {
+    "clipboardy": "^4.0.0",
     "commander": "^14.0.0"
   },
   "devDependencies": {
