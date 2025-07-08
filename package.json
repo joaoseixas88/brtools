@@ -1,13 +1,16 @@
 {
   "name": "@joaoseixas/brtools",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
+  "description": "A CLI tool to help you with your daily tasks",
+  "main": "dist/index.js",
+  "bin": {
+    "tools": "dist/index.js"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "keywords": [],
-  "author": "",
+  "author": "Joao Seixas",
   "license": "ISC",
   "dependencies": {
     "commander": "^14.0.0"

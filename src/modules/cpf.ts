@@ -7,12 +7,12 @@ export class Cpf extends CliModule {
     const selectedActions = actions.filter((a) => options[a]);
     if (selectedActions.length !== 1) {
       throw new ValidationException(
-        "Você deve escolher exatamente uma das opções: --generate, --validate ou --digits"
+        "Você deve escolher exatamente uma das opções: --generate, --validate <cpf> ou --digits <000.000.000>"
       );
     }
     const action = selectedActions[0];
     const result = {
-      generate: () => this.generate(),
+      generate: () => this.generate(options),
       validate: () => {
         const isValid = this.validate(options.validate);
         return isValid ? "✅ CPF válido" : "❌ CPF inválido";
@@ -58,13 +58,17 @@ export class Cpf extends CliModule {
     return secondDigit;
   }
 
-  generate() {
+  generate(options) {
     const baseNumbers = Math.floor(Math.random() * 1_000_000_000)
       .toString()
       .padStart(9, "0");
     const firstDigit = this.verifyFirstDigit(baseNumbers);
     const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit);
-    return `${baseNumbers}${firstDigit}${secondDigit}`;
+    const cpf = `${baseNumbers}${firstDigit}${secondDigit}`;
+    if (options?.formatted) {
+      return this.formatCpf(cpf);
+    }
+    return cpf;
   }
 
   digits(baseNumbers: string) {
@@ -85,5 +89,12 @@ export class Cpf extends CliModule {
     const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit);
 
     return checkDigits === `${firstDigit}${secondDigit}`;
+  }
+
+  private formatCpf(cpf: string): string {
+    return cpf
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
   }
 }

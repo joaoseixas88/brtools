@@ -4,14 +4,14 @@ import { program } from "commander";
 import { version, name, description } from "../package.json";
 import clipboard from "clipboardy";
 import { Cpf } from "./modules/cpf";
-import { ValidationException } from "./exceptions/Validation";
 
 const commandWrapper = (fn: (options: any) => void) => (options: any) => {
   try {
     fn(options);
   } catch (error) {
-    if (error instanceof ValidationException) {
+    if (error.name === "ValidationException") {
       console.log(error.message);
+      return;
     } else {
       console.error("Erro inesperado:", error);
     }
@@ -30,6 +30,7 @@ program
   .option("-v, --validate <cpf>", "Validar um CPF informado")
   .option("-d, --digits <digits>", "Digitos verificadores do CPF")
   .option("-c --copy", "Copia o CPF gerado/validado para o clipboard")
+  .option("-f --formatted", "Formata o cpf criado")
   .action(
     commandWrapper((options) => {
       const output = new Cpf().handle(options);
