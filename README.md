@@ -158,6 +158,8 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 ## 👨‍💻 Autor
 
 **João Seixas**
+- GitHub: [github.com/joaoseixas88](https://github.com/joaoseixas88)
+- Projeto: [github.com/joaoseixas88/brtools](https://github.com/joaoseixas88/brtools)
 
 ## 🌟 Agradecimentos
 
