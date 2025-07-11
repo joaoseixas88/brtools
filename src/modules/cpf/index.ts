@@ -1,5 +1,5 @@
-import { ValidationException } from "../exceptions/Validation";
-import { CliModule } from "./module";
+import { ValidationException } from "../../exceptions/Validation";
+import { CliModule } from "../module";
 
 export class Cpf extends CliModule {
   handle(options: Record<string, any>): CliModule.Result {
@@ -24,37 +24,28 @@ export class Cpf extends CliModule {
     return result;
   }
 
-  private verifyFirstDigit(baseNumbers: string) {
-    const total = baseNumbers.split("").reduce((acc, previous, index) => {
-      const multi = Number(previous) * (10 - index);
+  private calculateWeightedSum(base: string, length: number): number {
+    return base.split("").reduce((acc, previous, index) => {
+      const multi = Number(previous) * (length - index);
       acc += multi;
       return acc;
     }, 0);
+  }
+
+  private verifyFirstDigit(baseNumbers: string) {
+    const total = this.calculateWeightedSum(baseNumbers, 10);
     const rest = total % 11;
-    let firstDigit = 0;
-    if (rest <= 1) {
-      firstDigit = 0;
-    } else {
-      firstDigit = 11 - rest;
-    }
+    const firstDigit = rest <= 1 ? 0 : rest - 11;
     return firstDigit;
   }
 
   private verifySecondDigit(baseNumbers: string, firstVeririedNumber: number) {
-    const total = `${baseNumbers}${firstVeririedNumber}`
-      .split("")
-      .reduce((acc, previous, index) => {
-        const multi = Number(previous) * (11 - index);
-        acc += multi;
-        return acc;
-      }, 0);
+    const total = this.calculateWeightedSum(
+      `${baseNumbers}${firstVeririedNumber}`,
+      11
+    );
     const rest = total % 11;
-    let secondDigit = 0;
-    if (rest <= 1) {
-      secondDigit = 0;
-    } else {
-      secondDigit = 11 - rest;
-    }
+    const secondDigit = rest <= 1 ? 0 : rest - 11;
     return secondDigit;
   }
 
