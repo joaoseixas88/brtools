@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Cpf = void 0;
-const Validation_1 = require("../exceptions/Validation");
-const module_1 = require("./module");
+const Validation_1 = require("../../exceptions/Validation");
+const module_1 = require("../module");
 class Cpf extends module_1.CliModule {
     handle(options) {
         const actions = ["generate", "validate", "digits"];
         const selectedActions = actions.filter((a) => options[a]);
-        if (selectedActions.length !== 1) {
+        if (selectedActions.length > 1) {
             throw new Validation_1.ValidationException("Você deve escolher exatamente uma das opções: --generate, --validate <cpf> ou --digits <000.000.000>");
         }
-        const action = selectedActions[0];
+        const action = selectedActions[0] ?? "generate";
         const result = {
             generate: () => this.generate(options),
             validate: () => {
@@ -23,38 +23,23 @@ class Cpf extends module_1.CliModule {
         }[action]();
         return result;
     }
-    verifyFirstDigit(baseNumbers) {
-        const total = baseNumbers.split("").reduce((acc, previous, index) => {
-            const multi = Number(previous) * (10 - index);
+    calculateWeightedSum(base, length) {
+        return base.split("").reduce((acc, previous, index) => {
+            const multi = Number(previous) * (length - index);
             acc += multi;
             return acc;
         }, 0);
+    }
+    verifyFirstDigit(baseNumbers) {
+        const total = this.calculateWeightedSum(baseNumbers, 10);
         const rest = total % 11;
-        let firstDigit = 0;
-        if (rest <= 1) {
-            firstDigit = 0;
-        }
-        else {
-            firstDigit = 11 - rest;
-        }
+        const firstDigit = rest <= 1 ? 0 : 11 - rest;
         return firstDigit;
     }
     verifySecondDigit(baseNumbers, firstVeririedNumber) {
-        const total = `${baseNumbers}${firstVeririedNumber}`
-            .split("")
-            .reduce((acc, previous, index) => {
-            const multi = Number(previous) * (11 - index);
-            acc += multi;
-            return acc;
-        }, 0);
+        const total = this.calculateWeightedSum(`${baseNumbers}${firstVeririedNumber}`, 11);
         const rest = total % 11;
-        let secondDigit = 0;
-        if (rest <= 1) {
-            secondDigit = 0;
-        }
-        else {
-            secondDigit = 11 - rest;
-        }
+        const secondDigit = rest <= 1 ? 0 : 11 - rest;
         return secondDigit;
     }
     generate(options) {
@@ -62,7 +47,7 @@ class Cpf extends module_1.CliModule {
             .toString()
             .padStart(9, "0");
         const firstDigit = this.verifyFirstDigit(baseNumbers);
-        const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit);
+        const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit.toString());
         const cpf = `${baseNumbers}${firstDigit}${secondDigit}`;
         if (options?.formatted) {
             return this.formatCpf(cpf);
@@ -71,7 +56,7 @@ class Cpf extends module_1.CliModule {
     }
     digits(baseNumbers) {
         const firstDigit = this.verifyFirstDigit(baseNumbers.toString());
-        const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit);
+        const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit.toString());
         return `${firstDigit}${secondDigit}`;
     }
     validate(cpf) {
@@ -82,7 +67,7 @@ class Cpf extends module_1.CliModule {
         const baseNumbers = cleanCpf.substring(0, 9);
         const checkDigits = cleanCpf.substring(9, 11);
         const firstDigit = this.verifyFirstDigit(baseNumbers);
-        const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit);
+        const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit.toString());
         return checkDigits === `${firstDigit}${secondDigit}`;
     }
     formatCpf(cpf) {

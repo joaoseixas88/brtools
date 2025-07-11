@@ -8,5 +8,11 @@
     "resolveJsonModule": true,
     "strict": false,
     "lib": ["ES2020"]
-  }
+  },
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/__tests__/**",
+    "jest.config.ts"
+  ]
 }
