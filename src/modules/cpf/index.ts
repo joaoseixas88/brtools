@@ -5,12 +5,12 @@ export class Cpf extends CliModule {
   handle(options: Record<string, any>): CliModule.Result {
     const actions = ["generate", "validate", "digits"];
     const selectedActions = actions.filter((a) => options[a]);
-    if (selectedActions.length !== 1) {
+    if (selectedActions.length > 1) {
       throw new ValidationException(
         "Você deve escolher exatamente uma das opções: --generate, --validate <cpf> ou --digits <000.000.000>"
       );
     }
-    const action = selectedActions[0];
+    const action = selectedActions[0] ?? "generate";
     const result = {
       generate: () => this.generate(options),
       validate: () => {
@@ -35,17 +35,17 @@ export class Cpf extends CliModule {
   private verifyFirstDigit(baseNumbers: string) {
     const total = this.calculateWeightedSum(baseNumbers, 10);
     const rest = total % 11;
-    const firstDigit = rest <= 1 ? 0 : rest - 11;
+    const firstDigit = rest <= 1 ? 0 : 11 - rest;
     return firstDigit;
   }
 
-  private verifySecondDigit(baseNumbers: string, firstVeririedNumber: number) {
+  private verifySecondDigit(baseNumbers: string, firstVeririedNumber: string) {
     const total = this.calculateWeightedSum(
       `${baseNumbers}${firstVeririedNumber}`,
       11
     );
     const rest = total % 11;
-    const secondDigit = rest <= 1 ? 0 : rest - 11;
+    const secondDigit = rest <= 1 ? 0 : 11 - rest;
     return secondDigit;
   }
 
@@ -54,7 +54,10 @@ export class Cpf extends CliModule {
       .toString()
       .padStart(9, "0");
     const firstDigit = this.verifyFirstDigit(baseNumbers);
-    const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit);
+    const secondDigit = this.verifySecondDigit(
+      baseNumbers,
+      firstDigit.toString()
+    );
     const cpf = `${baseNumbers}${firstDigit}${secondDigit}`;
     if (options?.formatted) {
       return this.formatCpf(cpf);
@@ -64,7 +67,10 @@ export class Cpf extends CliModule {
 
   digits(baseNumbers: string) {
     const firstDigit = this.verifyFirstDigit(baseNumbers.toString());
-    const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit);
+    const secondDigit = this.verifySecondDigit(
+      baseNumbers,
+      firstDigit.toString()
+    );
     return `${firstDigit}${secondDigit}`;
   }
 
@@ -77,7 +83,10 @@ export class Cpf extends CliModule {
     const checkDigits = cleanCpf.substring(9, 11);
 
     const firstDigit = this.verifyFirstDigit(baseNumbers);
-    const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit);
+    const secondDigit = this.verifySecondDigit(
+      baseNumbers,
+      firstDigit.toString()
+    );
 
     return checkDigits === `${firstDigit}${secondDigit}`;
   }
