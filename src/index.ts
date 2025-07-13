@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 import { program } from "commander";
-import { version, name, description } from "../package.json";
-import { Cpf } from "./modules/cpf";
 import { copy } from "copy-paste/promises";
+import { description, name, version } from "../package.json";
+import { Cpf } from "./modules/cpf";
+import { logger } from "./services/logger";
 
 const commandWrapper = (fn: (options: any) => Promise<void>) => async (
   options: any
@@ -39,10 +40,21 @@ program
     commandWrapper(async (options) => {
       const output = new Cpf().handle(options);
       if (options.copy) {
-        await copy(output);
-        console.log(`${output}  ✅ Copiado para a área de transferência`);
+        return await copy(output)
+          .then(() => {
+            logger.info(`${output}  ✅ Copiado para a área de transferência`);
+          })
+          .catch((err) => {
+            if (err.path === "xclip") {
+              logger.error("Erro ao copiar para a área de transferência");
+              logger.warn(
+                "xclip não encontrado: necessário para copiar no Linux. Instale com: sudo apt install xclip"
+              );
+              logger.info(output);
+            }
+          });
       } else {
-        console.log(output);
+        logger.info(output);
       }
     })
   );
