@@ -5,7 +5,9 @@ import { version, name, description } from "../package.json";
 import { Cpf } from "./modules/cpf";
 import { copy } from "copy-paste/promises";
 
-const commandWrapper = (fn: (options: any) => void) => (options: any) => {
+const commandWrapper = (fn: (options: any) => Promise<void>) => async (
+  options: any
+) => {
   try {
     fn(options);
   } catch (error) {
@@ -15,6 +17,8 @@ const commandWrapper = (fn: (options: any) => void) => (options: any) => {
     } else {
       console.error("Erro inesperado:", error);
     }
+  } finally {
+    process.exit(0);
   }
 };
 
@@ -32,10 +36,10 @@ program
   .option("-c --copy", "Copia o CPF gerado/validado para o clipboard")
   .option("-f --formatted", "Formata o cpf criado")
   .action(
-    commandWrapper((options) => {
+    commandWrapper(async (options) => {
       const output = new Cpf().handle(options);
       if (options.copy) {
-        copy(output);
+        await copy(output);
         console.log(`${output}  ✅ Copiado para a área de transferência`);
       } else {
         console.log(output);
