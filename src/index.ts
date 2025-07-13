@@ -2,8 +2,8 @@
 
 import { program } from "commander";
 import { version, name, description } from "../package.json";
-import clipboard from "clipboardy";
 import { Cpf } from "./modules/cpf";
+import { copy } from "copy-paste/promises";
 
 const commandWrapper = (fn: (options: any) => void) => (options: any) => {
   try {
@@ -35,7 +35,7 @@ program
     commandWrapper((options) => {
       const output = new Cpf().handle(options);
       if (options.copy) {
-        clipboard.writeSync(output);
+        copy(output);
         console.log(`${output}  ✅ Copiado para a área de transferência`);
       } else {
         console.log(output);
