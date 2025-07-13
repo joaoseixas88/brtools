@@ -9,7 +9,7 @@ const commandWrapper = (fn: (options: any) => Promise<void>) => async (
   options: any
 ) => {
   try {
-    fn(options);
+    await fn(options);
   } catch (error) {
     if (error.name === "ValidationException") {
       console.log(error.message);
