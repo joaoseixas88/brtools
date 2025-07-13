@@ -1,0 +1,17 @@
+# Arquivos de desenvolvimento
+*.spec.ts
+*.test.ts
+__tests__/
+coverage/
+jest.config.ts
+tsconfig.json
+
+# Arquivos de configuração
+.gitignore
+.git/
+
+# Dependências
+node_modules/
+
+# Build será gerado durante a instalação
+# Removemos dist daqui para que seja incluído no pacote 
