@@ -11,11 +11,20 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 - 📋 **Cópia para Clipboard**: Copia automaticamente o resultado
 - 🎨 **Formatação**: Formata CPFs no padrão XXX.XXX.XXX-XX
 
+### CNPJ
+- ✅ **Geração**: Gera CNPJs válidos aleatoriamente
+- 🔍 **Validação**: Valida CNPJs existentes
+- 🧮 **Dígitos Verificadores**: Calcula os dígitos verificadores de um CNPJ
+- 📋 **Cópia para Clipboard**: Copia automaticamente o resultado
+- 🎨 **Formatação**: Formata CNPJs no padrão XX.XXX.XXX/XXXX-XX
+
 ## 📦 Instalação
 
 ```bash
 npm install -g @joaoseixas/brtools
 ```
+
+> **Nota**: O projeto é buildado automaticamente durante a instalação, garantindo que você sempre tenha a versão mais atualizada.
 
 ## 🛠️ Uso
 
@@ -48,15 +57,44 @@ brtools cpf --validate 123.456.789-01
 brtools cpf --digits 123456789
 ```
 
+### Comando CNPJ
+
+#### Gerar CNPJ
+```bash
+# Gerar um CNPJ válido
+brtools cnpj --generate
+
+# Gerar CNPJ formatado
+brtools cnpj --generate --formatted
+
+# Gerar CNPJ e copiar para área de transferência
+brtools cnpj --generate --copy
+```
+
+#### Validar CNPJ
+```bash
+# Validar um CNPJ
+brtools cnpj --validate 11222333000181
+
+# Validar CNPJ formatado
+brtools cnpj --validate 11.222.333/0001-81
+```
+
+#### Calcular Dígitos Verificadores
+```bash
+# Calcular dígitos verificadores para os 12 primeiros números
+brtools cnpj --digits 112223330001
+```
+
 ### Opções Globais
 
 | Opção | Descrição |
 |-------|-----------|
-| `-g, --generate` | Gera um CPF válido |
-| `-v, --validate <cpf>` | Valida um CPF informado |
+| `-g, --generate` | Gera um CPF/CNPJ válido |
+| `-v, --validate <documento>` | Valida um CPF/CNPJ informado |
 | `-d, --digits <digits>` | Calcula dígitos verificadores |
 | `-c, --copy` | Copia o resultado para a área de transferência |
-| `-f, --formatted` | Formata o CPF no padrão XXX.XXX.XXX-XX |
+| `-f, --formatted` | Formata o documento no padrão brasileiro |
 | `--version` | Mostra a versão da ferramenta |
 | `--help` | Mostra ajuda |
 
@@ -71,39 +109,66 @@ brtools cpf --generate --formatted --copy
 brtools cpf --validate 11144477735
 # Output: ✅ CPF válido
 
-# Calcular dígitos verificadores
+# Calcular dígitos verificadores de CPF
 brtools cpf --digits 111444777
 # Output: Dígitos verificadores: 35
+
+# Gerar CNPJ formatado
+brtools cnpj --generate --formatted
+# Output: 11.222.333/0001-81
+
+# Validar CNPJ
+brtools cnpj --validate 11222333000181
+# Output: ✅ CNPJ válido
 ```
 
 ## 🏗️ Arquitetura
 
-O projeto segue uma arquitetura modular e extensível:
+O projeto segue uma arquitetura modular e extensível com carregamento automático de módulos:
 
 ```
 src/
+├── commander/           # Sistema de comandos
+│   └── index.ts        # ProgramStarter - carrega módulos automaticamente
 ├── exceptions/          # Exceções customizadas
 │   └── Validation.ts   # Tratamento de erros de validação
+├── helpers/            # Funções utilitárias
+│   └── numbers.ts      # Helpers para manipulação de números
 ├── modules/            # Módulos funcionais
-│   ├── module.ts       # Classe base abstrata
-│   └── cpf.ts         # Módulo de operações com CPF
+│   ├── cpf/           # Módulo de operações com CPF
+│   │   ├── index.ts   # Lógica principal do CPF
+│   │   ├── commander.ts  # Configuração de comandos
+│   │   └── cpf.spec.ts  # Testes do módulo
+│   ├── cnpj/          # Módulo de operações com CNPJ
+│   │   ├── index.ts   # Lógica principal do CNPJ
+│   │   ├── commander.ts  # Configuração de comandos
+│   │   └── cnpj.spec.ts  # Testes do módulo
+│   └── module.ts      # Classe base abstrata
+├── services/           # Serviços compartilhados
+│   └── logger.ts      # Sistema de logging colorido
+├── types/             # Definições de tipos TypeScript
 └── index.ts           # Ponto de entrada da CLI
 ```
 
 ### Estrutura Modular
 
+- **ProgramStarter**: Carrega automaticamente todos os módulos com comandos
 - **CliModule**: Classe abstrata que define a interface para todos os módulos
 - **CPF Module**: Implementa todas as operações relacionadas a CPF
+- **CNPJ Module**: Implementa todas as operações relacionadas a CNPJ
+- **Logger Service**: Fornece logging colorido com chalk
 - **ValidationException**: Tratamento especializado de erros de validação
+- **NumbersHelper**: Funções utilitárias para manipulação de números
 
 ## 🛣️ Roadmap
 
 ### Próximas Funcionalidades
-- 📱 **CNPJ**: Geração, validação e formatação
 - 🏦 **Códigos Bancários**: Validação de códigos de bancos brasileiros
 - 📮 **CEP**: Consulta e validação de CEPs
 - 🆔 **RG**: Validação por estado
 - 📞 **Telefone**: Formatação e validação de números brasileiros
+- 💳 **Cartão de Crédito**: Validação de números de cartão
+- 🏛️ **Inscrição Estadual**: Validação por estado
 
 ## 🧪 Desenvolvimento
 
@@ -117,16 +182,34 @@ src/
 # Compilar o projeto
 npm run build
 
+# Executar testes
+npm run test
+
 # Instalar dependências
 pnpm install
+
+# Fazer build e criar nova versão patch
+npm run v:patch
 ```
+
+### Instalação Automática
+O projeto está configurado com um script `prepare` que:
+- Compila automaticamente o TypeScript durante a instalação
+- Garante que os usuários sempre tenham a versão mais recente
+- Não requer distribuição da pasta `dist` no repositório
 
 ### Estrutura do Projeto
 
 ```bash
 brtools/
-├── src/                    # Código fonte
-├── dist/                   # Código compilado
+├── src/                    # Código fonte TypeScript
+│   ├── commander/         # Sistema de comandos
+│   ├── exceptions/        # Exceções customizadas
+│   ├── helpers/           # Funções utilitárias
+│   ├── modules/           # Módulos funcionais (CPF, CNPJ, etc.)
+│   ├── services/          # Serviços compartilhados
+│   └── types/             # Definições de tipos
+├── dist/                   # Código compilado (gerado automaticamente)
 ├── package.json           # Configurações do projeto
 ├── tsconfig.json          # Configurações TypeScript
 └── README.md             # Documentação
@@ -146,10 +229,49 @@ Contribuições são sempre bem-vindas! Para contribuir:
 
 Para adicionar um novo módulo:
 
-1. Crie uma nova classe que estenda `CliModule`
-2. Implemente o método `handle(options)`
-3. Adicione o comando no `index.ts`
-4. Documente a funcionalidade
+1. Crie uma nova pasta em `src/modules/nome-do-modulo/`
+2. Implemente a classe que estenda `CliModule`
+3. Crie o arquivo `commander.ts` com as configurações do comando
+4. Adicione testes no arquivo `*.spec.ts`
+5. O `ProgramStarter` carregará automaticamente o novo módulo
+
+### Exemplo de Estrutura de Módulo
+
+```typescript
+// src/modules/exemplo/index.ts
+import { CliModule } from "../module";
+
+export class ExemploModule extends CliModule {
+  handle(options: any): CliModule.Result {
+    // Sua lógica aqui
+    return "resultado";
+  }
+}
+
+// src/modules/exemplo/commander.ts
+import { Command } from "commander";
+import { ExemploModule } from "./index";
+
+export default function (program: Command) {
+  program
+    .command("exemplo")
+    .description("Descrição do seu módulo")
+    .option("-o, --option", "Sua opção")
+    .action((options) => {
+      const result = new ExemploModule().handle(options);
+      console.log(result);
+    });
+}
+```
+
+## 🔧 Tecnologias Utilizadas
+
+- **TypeScript**: Linguagem principal
+- **Commander.js**: Framework para CLI
+- **Chalk**: Colorização de output
+- **Copy-paste**: Funcionalidade de clipboard
+- **Jest**: Framework de testes
+- **Node.js**: Runtime
 
 ## 📄 Licença
 
@@ -165,6 +287,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 - Comunidade JavaScript/TypeScript brasileira
 - Contributors e usuários da ferramenta
+- Inspiração na necessidade de ferramentas brasileiras para desenvolvedores
 
 ---
 
