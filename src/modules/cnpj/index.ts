@@ -1,9 +1,32 @@
+import { ValidationException } from "../../exceptions/Validation";
 import { NumbersHelper } from "../../helpers/numbers";
 import { CliModule } from "../module";
 
 export class CnpjModule extends CliModule {
+  validateParams(options: Record<string, any>): string {
+    const actions = ["generate", "validate", "digits"];
+    const selectedActions = actions.filter((a) => options[a]);
+    if (selectedActions.length > 1) {
+      throw new ValidationException(
+        "Você deve escolher exatamente uma das opções: --generate, --validate <cnpj> ou --digits <00.000.000/0000-00>"
+      );
+    }
+    const action = selectedActions[0] ?? "generate";
+    return action;
+  }
   handle(options: any): CliModule.Result {
-    throw new Error("Method not implemented.");
+    const action = this.validateParams(options);
+    const result = {
+      generate: () => this.generate(options),
+      validate: () => {
+        const isValid = this.validate(options.validate);
+        return isValid ? "✅ CNPJ válido" : "❌ CNPJ inválido";
+      },
+      digits: () => {
+        return this.digits(options.digits);
+      },
+    }[action]!();
+    return result;
   }
 
   private checkSum(base: string, start: number) {
@@ -25,12 +48,17 @@ export class CnpjModule extends CliModule {
     return rest < 2 ? 0 : 11 - rest;
   }
 
-  generate() {
+  generate(options?: Record<string, any>) {
     const baseNumber = NumbersHelper.genRandomNumber(8);
     const base = `${baseNumber}0001`;
     const firstDigit = this.verifyDigit(base);
     const secondDigit = this.verifyDigit(`${base}${firstDigit}`);
-    return `${base}${firstDigit}${secondDigit}`;
+
+    const cnpj = `${base}${firstDigit}${secondDigit}`;
+    if (options?.formatted) {
+      return this.format(cnpj);
+    }
+    return cnpj;
   }
 
   validate(cnpj: string) {
@@ -45,6 +73,16 @@ export class CnpjModule extends CliModule {
     return (
       firstDigit.toString() === cnpj[12] && secondDigit.toString() === cnpj[13]
     );
+  }
+
+  digits(base: string) {
+    base = NumbersHelper.onlyNumbers(base);
+    if (base.length !== 12) {
+      throw new ValidationException("Números base inválidos");
+    }
+    const firstDigit = this.verifyDigit(base);
+    const secondDigit = this.verifyDigit(`${base}${firstDigit}`);
+    return `Digitaos verificadores: ${firstDigit}${secondDigit}`;
   }
 
   private format(cnpj: string) {

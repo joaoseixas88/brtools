@@ -2,7 +2,7 @@ import { ValidationException } from "../../exceptions/Validation";
 import { CliModule } from "../module";
 
 export class Cpf extends CliModule {
-  handle(options: Record<string, any>): CliModule.Result {
+  validateParams(options: Record<string, any>): string {
     const actions = ["generate", "validate", "digits"];
     const selectedActions = actions.filter((a) => options[a]);
     if (selectedActions.length > 1) {
@@ -11,6 +11,11 @@ export class Cpf extends CliModule {
       );
     }
     const action = selectedActions[0] ?? "generate";
+    return action;
+  }
+
+  handle(options: Record<string, any>): CliModule.Result {
+    const action = this.validateParams(options);
     const result = {
       generate: () => this.generate(options),
       validate: () => {
