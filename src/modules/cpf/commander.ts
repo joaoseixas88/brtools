@@ -14,8 +14,8 @@ export default function (program: Command) {
     .option("-c --copy", "Copia o CPF gerado/validado para o clipboard")
     .option("-f --formatted", "Formata o cpf criado")
     .action(
-      commandWrapper(async (options) => {
-        const output = new Cpf().handle(options);
+      commandWrapper(async (...args: any) => {
+        const { options, output } = new Cpf().handle(args);
         if (options.copy) {
           return await copy(output)
             .then(() => {

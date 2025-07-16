@@ -1,10 +1,10 @@
 import { logger } from "../services/logger";
 
-const commandWrapper = (fn: (options: any) => Promise<void>) => async (
-  options: any
+const commandWrapper = (fn: (...args: any[]) => Promise<void>) => async (
+  ...args: any[]
 ) => {
   try {
-    await fn(options);
+    await fn(...args);
   } catch (error) {
     if (error.name === "ValidationException") {
       logger.error(error.message);

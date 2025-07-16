@@ -64,22 +64,24 @@ describe("Cpf Module", () => {
 
     it("should validate correctly if validate value is passed", () => {
       const sut = makeSut();
-      expect(sut.handle({ validate: "17657767081" })).toBe("✅ CPF válido");
+      expect(sut.handle({ validate: "17657767081" }).output).toBe(
+        "✅ CPF válido"
+      );
     });
 
     it("should call correctly the digits method if digits value is passed", () => {
       const sut = makeSut();
-      expect(sut.handle({ digits: "176577670" })).toBe(
+      expect(sut.handle({ digits: "176577670" }).output).toBe(
         "Dígitos verificadores: 81"
       );
     });
     it("should call correctly the generate method generate method is requested", () => {
       const sut = makeSut();
-      expect(sut.validate(sut.handle({ generate: true }))).toBe(true);
+      expect(sut.validate(sut.handle({ generate: true }).output)).toBe(true);
     });
     it("should call generate method if no method is requested", () => {
       const sut = makeSut();
-      expect(sut.validate(sut.handle({}))).toBe(true);
+      expect(sut.validate(sut.handle({}).output)).toBe(true);
     });
   });
 });

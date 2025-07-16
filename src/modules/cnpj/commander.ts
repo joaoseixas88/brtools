@@ -14,8 +14,8 @@ export default function (program: Command) {
     .option("-c --copy", "Copia o CNPJ gerado/validado para o clipboard")
     .option("-f --formatted", "Formata o CNPJ criado")
     .action(
-      commandWrapper(async (options) => {
-        const output = new CnpjModule().handle(options);
+      commandWrapper(async (...args: any) => {
+        const { options, output } = new CnpjModule().handle(args);
         if (options.copy) {
           return await copy(output)
             .then(() => {

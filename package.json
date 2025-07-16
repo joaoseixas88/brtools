@@ -25,6 +25,7 @@
   "author": "Joao Seixas",
   "license": "MIT",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "chalk": "^4.1.2",
     "commander": "^14.0.0",
     "copy-paste": "^2.2.0"

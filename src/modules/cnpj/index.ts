@@ -26,7 +26,10 @@ export class CnpjModule extends CliModule {
         return this.digits(options.digits);
       },
     }[action]!();
-    return result;
+    return {
+      output: result,
+      options,
+    };
   }
 
   private checkSum(base: string, start: number) {

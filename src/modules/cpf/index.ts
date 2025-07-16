@@ -26,7 +26,10 @@ export class Cpf extends CliModule {
         return `Dígitos verificadores: ${this.digits(options.digits)}`;
       },
     }[action]!();
-    return result;
+    return {
+      options,
+      output: result,
+    };
   }
 
   private calculateWeightedSum(base: string, length: number): number {
