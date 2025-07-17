@@ -9,7 +9,10 @@
     "build": "tsc",
     "prepare": "npm run build",
     "test": "jest",
-    "v:patch": "pnpm build && npm version patch"
+    "v:patch": "pnpm build && npm version patch",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --fix --ext .ts,.tsx,.js,.jsx",
+    "format": "prettier --write ."
   },
   "files": [
     "dist/",
@@ -32,15 +35,25 @@
   },
   "devDependencies": {
     "@babel/core": "^7.28.0",
+    "@eslint/js": "^9.31.0",
+    "@eslint/json": "^0.13.0",
     "@swc/core": "^1.12.11",
     "@swc/jest": "^0.2.39",
     "@types/bcrypt": "^5.0.2",
     "@types/copy-paste": "^1.1.33",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.11",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.1",
+    "globals": "^16.3.0",
     "jest": "^30.0.4",
+    "prettier": "^3.6.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.0.0"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.37.0"
   }
 }

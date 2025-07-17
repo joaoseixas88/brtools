@@ -1,3 +1,3 @@
-import { Command } from "commander";
+import { Command } from 'commander';
 
 export type CommanderFn = (program: Command) => void;

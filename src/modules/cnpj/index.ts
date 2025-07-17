@@ -1,41 +1,44 @@
-import { ValidationException } from "../../exceptions/Validation";
-import { NumbersHelper } from "../../helpers/numbers";
-import { NewModule } from "../module";
+import { ValidationException } from '../../exceptions/Validation';
+import { NumbersHelper } from '../../helpers/numbers';
+import { NewModule } from '../module';
 
 export class CnpjModule extends NewModule {
-
-  private  getOptions(options: Record<string, any>): string[] {
-    return Object.keys(options)
+  private getOptions(options: Record<string, unknown>): string[] {
+    return Object.keys(options);
   }
-  validateParams(options: Record<string, any>): string {
-     const actions = ["generate", "validate", "digits"];
-    const optionKeys = this.getOptions(options)
-    const selectedActions = actions.filter(ac => optionKeys.includes(ac))
+  validateParams(options: Record<string, unknown>): string {
+    const actions = ['generate', 'validate', 'digits'];
+    const optionKeys = this.getOptions(options);
+    const selectedActions = actions.filter((ac) => optionKeys.includes(ac));
     if (selectedActions.length > 1) {
       throw new ValidationException(
-        "Você deve escolher exatamente uma das opções: --generate, --validate <cnpj> ou --digits <00.000.000/0000-00>"
+        'Você deve escolher exatamente uma das opções: --generate, --validate <cnpj> ou --digits <00.000.000/0000-00>',
       );
     }
-    const action = selectedActions[0] ?? "generate";
+    const action = selectedActions[0] ?? 'generate';
     return action;
   }
-  override async perform(options: any): Promise<string> {
+  override async perform(options: {
+    generate?: boolean;
+    validate?: string;
+    digits?: string;
+  }): Promise<string> {
     const action = this.validateParams(options);
     const result = {
-      generate: () => this.generate(options),
+      generate: () => this.generate(options as { formatted?: boolean }),
       validate: () => {
         const isValid = this.validate(options.validate);
-        return isValid ? "✅ CNPJ válido" : "❌ CNPJ inválido";
+        return isValid ? '✅ CNPJ válido' : '❌ CNPJ inválido';
       },
       digits: () => {
         return this.digits(options.digits);
       },
     }[action]!();
-    return result
+    return result;
   }
 
   private checkSum(base: string, start: number) {
-    const sum = base.split("").reduce((acc, val) => {
+    const sum = base.split('').reduce((acc, val) => {
       if (start < 2) {
         start = 9;
       }
@@ -53,7 +56,7 @@ export class CnpjModule extends NewModule {
     return rest < 2 ? 0 : 11 - rest;
   }
 
-  generate(options?: Record<string, any>) {
+  generate(options?: { formatted?: boolean }) {
     const baseNumber = NumbersHelper.genRandomNumber(8);
     const base = `${baseNumber}0001`;
     const firstDigit = this.verifyDigit(base);
@@ -70,20 +73,18 @@ export class CnpjModule extends NewModule {
     cnpj = NumbersHelper.onlyNumbers(cnpj);
     if (cnpj.length > 14) return false;
     if (cnpj.length < 14) {
-      cnpj = cnpj.padStart(14, "0");
+      cnpj = cnpj.padStart(14, '0');
     }
     const base = cnpj.slice(0, 12);
     const firstDigit = this.verifyDigit(base);
     const secondDigit = this.verifyDigit(`${base}${firstDigit}`);
-    return (
-      firstDigit.toString() === cnpj[12] && secondDigit.toString() === cnpj[13]
-    );
+    return firstDigit.toString() === cnpj[12] && secondDigit.toString() === cnpj[13];
   }
 
   digits(base: string) {
     base = NumbersHelper.onlyNumbers(base);
     if (base.length !== 12) {
-      throw new ValidationException("Números base inválidos");
+      throw new ValidationException('Números base inválidos');
     }
     const firstDigit = this.verifyDigit(base);
     const secondDigit = this.verifyDigit(`${base}${firstDigit}`);
@@ -92,9 +93,9 @@ export class CnpjModule extends NewModule {
 
   private format(cnpj: string) {
     return cnpj
-      .replace(/(\d{2})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1/$2")
-      .replace(/(\d{4})(\d)/, "$1-$2");
+      .replace(/(\d{2})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1/$2')
+      .replace(/(\d{4})(\d)/, '$1-$2');
   }
 }

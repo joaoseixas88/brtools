@@ -3,26 +3,26 @@
  * https://jestjs.io/docs/configuration
  */
 
-import type { Config } from "jest";
+import type { Config } from 'jest';
 
 const config: Config = {
-  roots: ["<rootDir>/src"],
+  roots: ['<rootDir>/src'],
   collectCoverage: true,
-  coverageDirectory: "coverage",
-  collectCoverageFrom: ["<rootDir>/src/**/*.ts"],
+  coverageDirectory: 'coverage',
+  collectCoverageFrom: ['<rootDir>/src/**/*.ts'],
   transform: {
-    "^.+\\.(t|j)sx?$": [
-      "@swc/jest",
+    '^.+\\.(t|j)sx?$': [
+      '@swc/jest',
       {
         jsc: {
-          target: "es2021",
+          target: 'es2021',
         },
       },
     ],
   },
   verbose: false,
   silent: true,
-  extensionsToTreatAsEsm: [".ts"],
+  extensionsToTreatAsEsm: ['.ts'],
 };
 
 export default config;

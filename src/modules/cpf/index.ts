@@ -1,42 +1,45 @@
-import { ValidationException } from "../../exceptions/Validation";
-import { NewModule } from "../module";
+import { ValidationException } from '../../exceptions/Validation';
+import { NewModule } from '../module';
 
-export class Cpf extends  NewModule{
-
-  private  getOptions(options: Record<string, any>): string[] {
-    return Object.keys(options)
+export class Cpf extends NewModule {
+  private getOptions(options: Record<string, unknown>): string[] {
+    return Object.keys(options);
   }
 
-  validateParams(options: Record<string, any>): string {  
-    const actions = ["generate", "validate", "digits"];
-    const optionKeys = this.getOptions(options)
-    const selectedActions = actions.filter(ac => optionKeys.includes(ac))
+  validateParams(options: Record<string, unknown>): string {
+    const actions = ['generate', 'validate', 'digits'];
+    const optionKeys = this.getOptions(options);
+    const selectedActions = actions.filter((ac) => optionKeys.includes(ac));
     if (selectedActions.length > 1) {
       throw new ValidationException(
-        "Você deve escolher exatamente uma das opções: --generate, --validate <cpf> ou --digits <000.000.000>"
+        'Você deve escolher exatamente uma das opções: --generate, --validate <cpf> ou --digits <000.000.000>',
       );
     }
-    const action = selectedActions[0] ?? "generate";
+    const action = selectedActions[0] ?? 'generate';
     return action;
   }
 
-  override async perform(options: Record<string, any>): Promise<string> {
+  override async perform(options: {
+    generate?: boolean;
+    validate?: string;
+    digits?: string;
+  }): Promise<string> {
     const action = this.validateParams(options);
     const result = {
       generate: () => this.generate(options),
       validate: () => {
         const isValid = this.validate(options.validate);
-        return isValid ? "✅ CPF válido" : "❌ CPF inválido";
+        return isValid ? '✅ CPF válido' : '❌ CPF inválido';
       },
       digits: () => {
         return `Dígitos verificadores: ${this.digits(options.digits)}`;
       },
     }[action]!();
-    return result
+    return result;
   }
 
   private calculateWeightedSum(base: string, length: number): number {
-    return base.split("").reduce((acc, previous, index) => {
+    return base.split('').reduce((acc, previous, index) => {
       const multi = Number(previous) * (length - index);
       acc += multi;
       return acc;
@@ -51,10 +54,7 @@ export class Cpf extends  NewModule{
   }
 
   private verifySecondDigit(baseNumbers: string, firstVeririedNumber: string) {
-    const total = this.calculateWeightedSum(
-      `${baseNumbers}${firstVeririedNumber}`,
-      11
-    );
+    const total = this.calculateWeightedSum(`${baseNumbers}${firstVeririedNumber}`, 11);
     const rest = total % 11;
     const secondDigit = rest <= 1 ? 0 : 11 - rest;
     return secondDigit;
@@ -63,12 +63,9 @@ export class Cpf extends  NewModule{
   generate(options) {
     const baseNumbers = Math.floor(Math.random() * 1_000_000_000)
       .toString()
-      .padStart(9, "0");
+      .padStart(9, '0');
     const firstDigit = this.verifyFirstDigit(baseNumbers);
-    const secondDigit = this.verifySecondDigit(
-      baseNumbers,
-      firstDigit.toString()
-    );
+    const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit.toString());
     const cpf = `${baseNumbers}${firstDigit}${secondDigit}`;
     if (options?.formatted) {
       return this.formatCpf(cpf);
@@ -78,15 +75,12 @@ export class Cpf extends  NewModule{
 
   digits(baseNumbers: string) {
     const firstDigit = this.verifyFirstDigit(baseNumbers.toString());
-    const secondDigit = this.verifySecondDigit(
-      baseNumbers,
-      firstDigit.toString()
-    );
+    const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit.toString());
     return `${firstDigit}${secondDigit}`;
   }
 
   validate(cpf: string): boolean {
-    const cleanCpf = cpf.replace(/\D/g, "");
+    const cleanCpf = cpf.replace(/\D/g, '');
     if (cleanCpf.length !== 11) {
       return false;
     }
@@ -94,18 +88,15 @@ export class Cpf extends  NewModule{
     const checkDigits = cleanCpf.substring(9, 11);
 
     const firstDigit = this.verifyFirstDigit(baseNumbers);
-    const secondDigit = this.verifySecondDigit(
-      baseNumbers,
-      firstDigit.toString()
-    );
+    const secondDigit = this.verifySecondDigit(baseNumbers, firstDigit.toString());
 
     return checkDigits === `${firstDigit}${secondDigit}`;
   }
 
   private formatCpf(cpf: string): string {
     return cpf
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
   }
 }

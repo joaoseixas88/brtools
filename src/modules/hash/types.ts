@@ -1,1 +1,1 @@
-export type AlgorithmTypes = "bcrypt";
+export type AlgorithmTypes = 'bcrypt';

@@ -5,13 +5,15 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 ## 🚀 Funcionalidades
 
 ### CPF
+
 - ✅ **Geração**: Gera CPFs válidos aleatoriamente
-- 🔍 **Validação**: Valida CPFs existentes  
+- 🔍 **Validação**: Valida CPFs existentes
 - 🧮 **Dígitos Verificadores**: Calcula os dígitos verificadores de um CPF
 - 📋 **Cópia para Clipboard**: Copia automaticamente o resultado
 - 🎨 **Formatação**: Formata CPFs no padrão XXX.XXX.XXX-XX
 
 ### CNPJ
+
 - ✅ **Geração**: Gera CNPJs válidos aleatoriamente
 - 🔍 **Validação**: Valida CNPJs existentes
 - 🧮 **Dígitos Verificadores**: Calcula os dígitos verificadores de um CNPJ
@@ -31,6 +33,7 @@ npm install -g @joaoseixas/brtools
 ### Comando CPF
 
 #### Gerar CPF
+
 ```bash
 # Gerar um CPF válido
 brtools cpf --generate
@@ -43,6 +46,7 @@ brtools cpf --generate --copy
 ```
 
 #### Validar CPF
+
 ```bash
 # Validar um CPF
 brtools cpf --validate 12345678901
@@ -52,6 +56,7 @@ brtools cpf --validate 123.456.789-01
 ```
 
 #### Calcular Dígitos Verificadores
+
 ```bash
 # Calcular dígitos verificadores para os 9 primeiros números
 brtools cpf --digits 123456789
@@ -60,6 +65,7 @@ brtools cpf --digits 123456789
 ### Comando CNPJ
 
 #### Gerar CNPJ
+
 ```bash
 # Gerar um CNPJ válido
 brtools cnpj --generate
@@ -72,6 +78,7 @@ brtools cnpj --generate --copy
 ```
 
 #### Validar CNPJ
+
 ```bash
 # Validar um CNPJ
 brtools cnpj --validate 11222333000181
@@ -81,6 +88,7 @@ brtools cnpj --validate 11.222.333/0001-81
 ```
 
 #### Calcular Dígitos Verificadores
+
 ```bash
 # Calcular dígitos verificadores para os 12 primeiros números
 brtools cnpj --digits 112223330001
@@ -88,15 +96,15 @@ brtools cnpj --digits 112223330001
 
 ### Opções Globais
 
-| Opção | Descrição |
-|-------|-----------|
-| `-g, --generate` | Gera um CPF/CNPJ válido |
-| `-v, --validate <documento>` | Valida um CPF/CNPJ informado |
-| `-d, --digits <digits>` | Calcula dígitos verificadores |
-| `-c, --copy` | Copia o resultado para a área de transferência |
-| `-f, --formatted` | Formata o documento no padrão brasileiro |
-| `--version` | Mostra a versão da ferramenta |
-| `--help` | Mostra ajuda |
+| Opção                        | Descrição                                      |
+| ---------------------------- | ---------------------------------------------- |
+| `-g, --generate`             | Gera um CPF/CNPJ válido                        |
+| `-v, --validate <documento>` | Valida um CPF/CNPJ informado                   |
+| `-d, --digits <digits>`      | Calcula dígitos verificadores                  |
+| `-c, --copy`                 | Copia o resultado para a área de transferência |
+| `-f, --formatted`            | Formata o documento no padrão brasileiro       |
+| `--version`                  | Mostra a versão da ferramenta                  |
+| `--help`                     | Mostra ajuda                                   |
 
 ## 📋 Exemplos
 
@@ -163,6 +171,7 @@ src/
 ## 🛣️ Roadmap
 
 ### Próximas Funcionalidades
+
 - 🏦 **Códigos Bancários**: Validação de códigos de bancos brasileiros
 - 📮 **CEP**: Consulta e validação de CEPs
 - 🆔 **RG**: Validação por estado
@@ -173,6 +182,7 @@ src/
 ## 🧪 Desenvolvimento
 
 ### Pré-requisitos
+
 - Node.js 16+
 - pnpm (recomendado) ou npm
 
@@ -193,7 +203,9 @@ npm run v:patch
 ```
 
 ### Instalação Automática
+
 O projeto está configurado com um script `prepare` que:
+
 - Compila automaticamente o TypeScript durante a instalação
 - Garante que os usuários sempre tenham a versão mais recente
 - Não requer distribuição da pasta `dist` no repositório
@@ -239,24 +251,24 @@ Para adicionar um novo módulo:
 
 ```typescript
 // src/modules/exemplo/index.ts
-import { CliModule } from "../module";
+import { CliModule } from '../module';
 
 export class ExemploModule extends CliModule {
   handle(options: any): CliModule.Result {
     // Sua lógica aqui
-    return "resultado";
+    return 'resultado';
   }
 }
 
 // src/modules/exemplo/commander.ts
-import { Command } from "commander";
-import { ExemploModule } from "./index";
+import { Command } from 'commander';
+import { ExemploModule } from './index';
 
 export default function (program: Command) {
   program
-    .command("exemplo")
-    .description("Descrição do seu módulo")
-    .option("-o, --option", "Sua opção")
+    .command('exemplo')
+    .description('Descrição do seu módulo')
+    .option('-o, --option', 'Sua opção')
     .action((options) => {
       const result = new ExemploModule().handle(options);
       console.log(result);
@@ -280,6 +292,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 ## 👨‍💻 Autor
 
 **João Seixas**
+
 - GitHub: [github.com/joaoseixas88](https://github.com/joaoseixas88)
 - Projeto: [github.com/joaoseixas88/brtools](https://github.com/joaoseixas88/brtools)
 
