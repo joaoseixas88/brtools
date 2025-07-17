@@ -39,7 +39,8 @@
     "bcrypt": "^6.0.0",
     "chalk": "^4.1.2",
     "commander": "^14.0.0",
-    "copy-paste": "^2.2.0"
+    "copy-paste": "^2.2.0",
+    "posthog-node": "^5.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.28.0",

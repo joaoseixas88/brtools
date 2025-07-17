@@ -5,10 +5,10 @@ class FakeModule {
 }
 
 describe('Module Builder', () => {
-  it('should return bound handle method', () => {
+  it('should return bound handle method', async () => {
     const handle = makeModule(FakeModule);
     expect(typeof handle).toBe('function');
-    const result = handle('World');
+    const result = await handle('World');
     expect(result).toBe('Hello, World');
   });
 });
