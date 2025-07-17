@@ -22,8 +22,10 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 
 ### Hash
 
-- 🔐 **Hash com bcrypt**: Gera hashes seguros de textos utilizando bcrypt
-- ⚙️ **Salt Configurável**: Permite configurar o salt (padrão: 10)
+- 🔐 **Múltiplos Algoritmos**: Suporte a bcrypt, MD5, SHA256, SHA512 e Base64
+- 📄 **Texto e Arquivos**: Processa tanto textos quanto arquivos
+- ⚙️ **Salt Configurável**: Permite configurar o salt para bcrypt (padrão: 10)
+- 🔒 **Hashes Seguros**: bcrypt para senhas, SHA256/SHA512 para integridade
 - 📋 **Cópia para Clipboard**: Copia automaticamente o hash gerado
 
 ## 📦 Instalação
@@ -102,17 +104,53 @@ brtools cnpj --digits 112223330001
 
 ### Comando Hash
 
-#### Gerar Hash com bcrypt
+#### Algoritmos Disponíveis
+
+- **bcrypt**: Hash seguro para senhas (com salt configurável)
+- **md5**: Hash MD5 (128 bits)
+- **sha256**: Hash SHA-256 (256 bits)
+- **sha512**: Hash SHA-512 (512 bits)
+- **base64**: Codificação Base64
+
+#### Gerar Hash de Texto
 
 ```bash
-# Gerar hash de um texto
+# Hash bcrypt com texto
 brtools hash bcrypt --text "minha senha"
 
-# Gerar hash com salt customizado
+# Hash bcrypt com salt customizado
 brtools hash bcrypt --text "minha senha" --salt 12
 
-# Gerar hash e copiar para área de transferência
-brtools hash bcrypt --text "minha senha" --copy
+# Hash SHA-256 de um texto
+brtools hash sha256 --text "dados importantes"
+
+# Hash MD5 de um texto
+brtools hash md5 --text "texto qualquer"
+
+# Codificar em Base64
+brtools hash base64 --text "texto para codificar"
+
+# Qualquer hash com cópia para clipboard
+brtools hash sha512 --text "meu texto" --copy
+```
+
+#### Gerar Hash de Arquivo
+
+```bash
+# Hash SHA-256 de um arquivo
+brtools hash sha256 --file "./documento.txt"
+
+# Hash MD5 de um arquivo
+brtools hash md5 --file "./imagem.jpg"
+
+# bcrypt de conteúdo de arquivo
+brtools hash bcrypt --file "./config.txt" --salt 12
+
+# Base64 de um arquivo (útil para embeds)
+brtools hash base64 --file "./logo.png"
+
+# Hash de arquivo com cópia para clipboard
+brtools hash sha512 --file "./arquivo.pdf" --copy
 ```
 
 ### Opções Globais
@@ -123,6 +161,7 @@ brtools hash bcrypt --text "minha senha" --copy
 | `-v, --validate <documento>` | Valida um CPF/CNPJ informado                   |
 | `-d, --digits <digits>`      | Calcula dígitos verificadores                  |
 | `-t, --text <texto>`         | Texto a ser hasheado                           |
+| `-f, --file <arquivo>`       | Arquivo a ser processado/hasheado              |
 | `-s, --salt <salt>`          | Salt para algoritmo bcrypt (padrão: 10)       |
 | `-c, --copy`                 | Copia o resultado para a área de transferência |
 | `-f, --formatted`            | Formata o documento no padrão brasileiro       |
@@ -152,13 +191,25 @@ brtools cnpj --generate --formatted
 brtools cnpj --validate 11222333000181
 # Output: ✅ CNPJ válido
 
-# Gerar hash com bcrypt
+# Hash bcrypt de texto
 brtools hash bcrypt --text "minha senha"
 # Output: $2b$10$abc123...xyz789
 
-# Gerar hash com salt customizado
-brtools hash bcrypt --text "minha senha" --salt 12 --copy
-# Output: $2b$12$def456...uvw123  ✅ Copiado para a área de transferência
+# Hash SHA-256 de texto
+brtools hash sha256 --text "dados importantes"
+# Output: a1b2c3d4e5f6...
+
+# Hash MD5 de arquivo
+brtools hash md5 --file "./documento.txt"
+# Output: 5d41402abc4b...
+
+# Base64 de arquivo
+brtools hash base64 --file "./imagem.png"
+# Output: iVBORw0KGgoAAAANSUhEUgAA...
+
+# Hash SHA-512 com cópia para clipboard
+brtools hash sha512 --text "texto seguro" --copy
+# Output: a1b2c3d4e5f6...  ✅ Copiado para a área de transferência
 ```
 
 ## 🏗️ Arquitetura
@@ -199,7 +250,7 @@ src/
 - **CliModule**: Classe abstrata que define a interface para todos os módulos
 - **CPF Module**: Implementa todas as operações relacionadas a CPF
 - **CNPJ Module**: Implementa todas as operações relacionadas a CNPJ
-- **Hash Module**: Implementa hash de textos com bcrypt e outros algoritmos
+- **Hash Module**: Implementa hash de textos e arquivos com múltiplos algoritmos (bcrypt, MD5, SHA256, SHA512, Base64)
 - **Logger Service**: Fornece logging colorido com chalk
 - **ValidationException**: Tratamento especializado de erros de validação
 - **NumbersHelper**: Funções utilitárias para manipulação de números
