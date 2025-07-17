@@ -20,6 +20,12 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 - 📋 **Cópia para Clipboard**: Copia automaticamente o resultado
 - 🎨 **Formatação**: Formata CNPJs no padrão XX.XXX.XXX/XXXX-XX
 
+### Hash
+
+- 🔐 **Hash com bcrypt**: Gera hashes seguros de textos utilizando bcrypt
+- ⚙️ **Salt Configurável**: Permite configurar o salt (padrão: 10)
+- 📋 **Cópia para Clipboard**: Copia automaticamente o hash gerado
+
 ## 📦 Instalação
 
 ```bash
@@ -94,6 +100,21 @@ brtools cnpj --validate 11.222.333/0001-81
 brtools cnpj --digits 112223330001
 ```
 
+### Comando Hash
+
+#### Gerar Hash com bcrypt
+
+```bash
+# Gerar hash de um texto
+brtools hash bcrypt --text "minha senha"
+
+# Gerar hash com salt customizado
+brtools hash bcrypt --text "minha senha" --salt 12
+
+# Gerar hash e copiar para área de transferência
+brtools hash bcrypt --text "minha senha" --copy
+```
+
 ### Opções Globais
 
 | Opção                        | Descrição                                      |
@@ -101,6 +122,8 @@ brtools cnpj --digits 112223330001
 | `-g, --generate`             | Gera um CPF/CNPJ válido                        |
 | `-v, --validate <documento>` | Valida um CPF/CNPJ informado                   |
 | `-d, --digits <digits>`      | Calcula dígitos verificadores                  |
+| `-t, --text <texto>`         | Texto a ser hasheado                           |
+| `-s, --salt <salt>`          | Salt para algoritmo bcrypt (padrão: 10)       |
 | `-c, --copy`                 | Copia o resultado para a área de transferência |
 | `-f, --formatted`            | Formata o documento no padrão brasileiro       |
 | `--version`                  | Mostra a versão da ferramenta                  |
@@ -128,6 +151,14 @@ brtools cnpj --generate --formatted
 # Validar CNPJ
 brtools cnpj --validate 11222333000181
 # Output: ✅ CNPJ válido
+
+# Gerar hash com bcrypt
+brtools hash bcrypt --text "minha senha"
+# Output: $2b$10$abc123...xyz789
+
+# Gerar hash com salt customizado
+brtools hash bcrypt --text "minha senha" --salt 12 --copy
+# Output: $2b$12$def456...uvw123  ✅ Copiado para a área de transferência
 ```
 
 ## 🏗️ Arquitetura
@@ -151,6 +182,10 @@ src/
 │   │   ├── index.ts   # Lógica principal do CNPJ
 │   │   ├── commander.ts  # Configuração de comandos
 │   │   └── cnpj.spec.ts  # Testes do módulo
+│   ├── hash/          # Módulo de hash de textos
+│   │   ├── index.ts   # Lógica principal do hash
+│   │   ├── commander.ts  # Configuração de comandos
+│   │   └── types.ts   # Tipos para algoritmos de hash
 │   └── module.ts      # Classe base abstrata
 ├── services/           # Serviços compartilhados
 │   └── logger.ts      # Sistema de logging colorido
@@ -164,6 +199,7 @@ src/
 - **CliModule**: Classe abstrata que define a interface para todos os módulos
 - **CPF Module**: Implementa todas as operações relacionadas a CPF
 - **CNPJ Module**: Implementa todas as operações relacionadas a CNPJ
+- **Hash Module**: Implementa hash de textos com bcrypt e outros algoritmos
 - **Logger Service**: Fornece logging colorido com chalk
 - **ValidationException**: Tratamento especializado de erros de validação
 - **NumbersHelper**: Funções utilitárias para manipulação de números
@@ -218,7 +254,7 @@ brtools/
 │   ├── commander/         # Sistema de comandos
 │   ├── exceptions/        # Exceções customizadas
 │   ├── helpers/           # Funções utilitárias
-│   ├── modules/           # Módulos funcionais (CPF, CNPJ, etc.)
+│   ├── modules/           # Módulos funcionais (CPF, CNPJ, Hash, etc.)
 │   ├── services/          # Serviços compartilhados
 │   └── types/             # Definições de tipos
 ├── dist/                   # Código compilado (gerado automaticamente)
@@ -282,6 +318,7 @@ export default function (program: Command) {
 - **Commander.js**: Framework para CLI
 - **Chalk**: Colorização de output
 - **Copy-paste**: Funcionalidade de clipboard
+- **bcrypt**: Biblioteca para hash seguro de senhas
 - **Jest**: Framework de testes
 - **Node.js**: Runtime
 
