@@ -3,6 +3,7 @@ import { commandWrapper } from "../../helpers/commandWrapper";
 import { Cpf } from ".";
 import { copy } from "copy-paste/promises";
 import { logger } from "../../services/logger";
+import { makeModule } from "../../helpers/moduleBuilder";
 
 export default function (program: Command) {
   program
@@ -13,26 +14,5 @@ export default function (program: Command) {
     .option("-d, --digits <digits>", "Digitos verificadores do CPF")
     .option("-c --copy", "Copia o CPF gerado/validado para o clipboard")
     .option("-f --formatted", "Formata o cpf criado")
-    .action(
-      commandWrapper(async (...args: any) => {
-        const { options, output } = new Cpf().handle(args);
-        if (options.copy) {
-          return await copy(output)
-            .then(() => {
-              logger.info(`${output}  ✅ Copiado para a área de transferência`);
-            })
-            .catch((err) => {
-              if (err.path === "xclip") {
-                logger.error("Erro ao copiar para a área de transferência");
-                logger.warn(
-                  "xclip não encontrado: necessário para copiar no Linux. Instale com: sudo apt install xclip"
-                );
-                logger.info(output);
-              }
-            });
-        } else {
-          logger.info(output);
-        }
-      })
-    );
+    .action(makeModule(Cpf));
 }

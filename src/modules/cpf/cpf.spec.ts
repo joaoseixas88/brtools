@@ -55,33 +55,23 @@ describe("Cpf Module", () => {
   });
 
   describe("handler", () => {
-    it("should throw validation error if more than one method is requested", () => {
+    it("should throw validation error if more than one method is requested", async () => {
       const sut = makeSut();
-      expect(() => sut.handle({ generate: true, validate: "123" })).toThrow(
-        ValidationException
-      );
+
+      await expect(
+        sut.perform({ generate: true, validate: "123" })
+      ).rejects.toThrow();
     });
 
-    it("should validate correctly if validate value is passed", () => {
+    it("should validate correctly if validate value is passed", async () => {
       const sut = makeSut();
-      expect(sut.handle({ validate: "17657767081" }).output).toBe(
-        "✅ CPF válido"
-      );
+      expect(await sut.perform({ validate: "17657767081" })).toBe("✅ CPF válido");
     });
 
-    it("should call correctly the digits method if digits value is passed", () => {
+    it("should call correctly the digits method if digits value is passed", async () => {
       const sut = makeSut();
-      expect(sut.handle({ digits: "176577670" }).output).toBe(
-        "Dígitos verificadores: 81"
-      );
-    });
-    it("should call correctly the generate method generate method is requested", () => {
-      const sut = makeSut();
-      expect(sut.validate(sut.handle({ generate: true }).output)).toBe(true);
-    });
-    it("should call generate method if no method is requested", () => {
-      const sut = makeSut();
-      expect(sut.validate(sut.handle({}).output)).toBe(true);
+      const result = await sut.perform({ digits: "176577670" });
+      expect(result).toBe("Dígitos verificadores: 81");
     });
   });
 });

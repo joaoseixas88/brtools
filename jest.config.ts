@@ -20,8 +20,8 @@ const config: Config = {
       },
     ],
   },
-  verbose: true,
-  // silent: true,
+  verbose: false,
+  silent: true,
   extensionsToTreatAsEsm: [".ts"],
 };
 

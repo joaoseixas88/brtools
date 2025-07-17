@@ -1,11 +1,16 @@
 import { ValidationException } from "../../exceptions/Validation";
 import { NumbersHelper } from "../../helpers/numbers";
-import { CliModule } from "../module";
+import { NewModule } from "../module";
 
-export class CnpjModule extends CliModule {
+export class CnpjModule extends NewModule {
+
+  private  getOptions(options: Record<string, any>): string[] {
+    return Object.keys(options)
+  }
   validateParams(options: Record<string, any>): string {
-    const actions = ["generate", "validate", "digits"];
-    const selectedActions = actions.filter((a) => options[a]);
+     const actions = ["generate", "validate", "digits"];
+    const optionKeys = this.getOptions(options)
+    const selectedActions = actions.filter(ac => optionKeys.includes(ac))
     if (selectedActions.length > 1) {
       throw new ValidationException(
         "Você deve escolher exatamente uma das opções: --generate, --validate <cnpj> ou --digits <00.000.000/0000-00>"
@@ -14,7 +19,7 @@ export class CnpjModule extends CliModule {
     const action = selectedActions[0] ?? "generate";
     return action;
   }
-  handle(options: any): CliModule.Result {
+  override async perform(options: any): Promise<string> {
     const action = this.validateParams(options);
     const result = {
       generate: () => this.generate(options),
@@ -26,10 +31,7 @@ export class CnpjModule extends CliModule {
         return this.digits(options.digits);
       },
     }[action]!();
-    return {
-      output: result,
-      options,
-    };
+    return result
   }
 
   private checkSum(base: string, start: number) {

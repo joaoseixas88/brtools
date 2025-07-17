@@ -1,10 +1,16 @@
 import { ValidationException } from "../../exceptions/Validation";
-import { CliModule } from "../module";
+import { NewModule } from "../module";
 
-export class Cpf extends CliModule {
-  validateParams(options: Record<string, any>): string {
+export class Cpf extends  NewModule{
+
+  private  getOptions(options: Record<string, any>): string[] {
+    return Object.keys(options)
+  }
+
+  validateParams(options: Record<string, any>): string {  
     const actions = ["generate", "validate", "digits"];
-    const selectedActions = actions.filter((a) => options[a]);
+    const optionKeys = this.getOptions(options)
+    const selectedActions = actions.filter(ac => optionKeys.includes(ac))
     if (selectedActions.length > 1) {
       throw new ValidationException(
         "Você deve escolher exatamente uma das opções: --generate, --validate <cpf> ou --digits <000.000.000>"
@@ -14,7 +20,7 @@ export class Cpf extends CliModule {
     return action;
   }
 
-  handle(options: Record<string, any>): CliModule.Result {
+  override async perform(options: Record<string, any>): Promise<string> {
     const action = this.validateParams(options);
     const result = {
       generate: () => this.generate(options),
@@ -26,10 +32,7 @@ export class Cpf extends CliModule {
         return `Dígitos verificadores: ${this.digits(options.digits)}`;
       },
     }[action]!();
-    return {
-      options,
-      output: result,
-    };
+    return result
   }
 
   private calculateWeightedSum(base: string, length: number): number {

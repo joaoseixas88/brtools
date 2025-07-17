@@ -1,17 +1,17 @@
 import { copy } from "copy-paste/promises";
 import { logger } from "../services/logger";
 
-export abstract class CliModule<Type = Record<string, any>> {
-  abstract handle(...args: any[]): CliModule.Result;
-  abstract validateParams(...args: any[]): any;
-}
+// export abstract class CliModule<Type = Record<string, any>> {
+//   abstract handle(...args: any[]): CliModule.Result;
+//   abstract validateParams(...args: any[]): any;
+// }
 
-export namespace CliModule {
-  export type Result = {
-    output: string;
-    options: Record<string, any>;
-  };
-}
+// export namespace CliModule {
+//   export type Result = {
+//     output: string;
+//     options: Record<string, any>;
+//   };
+// }
 
 export class NewModule {
   async perform(...args: any): Promise<string> {
@@ -49,7 +49,9 @@ export class NewModule {
         console.error("Erro inesperado:", error);
       }
     } finally {
-      process.exit(0);
+      if (process.env.NODE_ENV !== "test") {
+        process.exit(0);
+      }
     }
   }
 }

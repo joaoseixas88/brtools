@@ -1,9 +1,9 @@
 import { ValidationException } from "../../exceptions/Validation";
-import { logger } from "../../services/logger";
 import { NewModule } from "../module";
-import {hash} from 'bcryptjs'
+import { AlgorithmTypes } from "./types";
+import { hash, genSalt } from "bcrypt"
 
-type AlgorithmTypes = "bcrypt";
+
 export class HashModule extends NewModule {
   override async perform(
     algorithm: AlgorithmTypes,
@@ -31,9 +31,13 @@ export class HashModule extends NewModule {
     }
   }
   
-  async bcrypt(options: Record<string, any>) {
-    const salt = options.salt? Number(options.salt) : 10
-    const hashValue = await hash(options.text,salt)
-    return hashValue
+ async bcrypt(options: Record<string, any>) {
+  let salt = Number(options.salt);
+  if (isNaN(salt) || salt <= 0) {
+    salt = 10;
   }
+  const hashValue = await hash(options.text, salt);
+  return hashValue;
+}
+
 }
