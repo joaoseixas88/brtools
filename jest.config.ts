@@ -23,6 +23,7 @@ const config: Config = {
   verbose: false,
   silent: true,
   extensionsToTreatAsEsm: ['.ts'],
+  passWithNoTests: true,
 };
 
 export default config;

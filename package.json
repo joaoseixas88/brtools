@@ -16,7 +16,8 @@
     "lint-staged": "lint-staged"
   },
   "lint-staged": {
-    "*": [
+    "*.{ts,js,json}": [
+      "jest --bail --findRelatedTests",
       "eslint --fix",
       "prettier --write"
     ]
