@@ -5,7 +5,7 @@ import path from 'path';
 import readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
 
-export class NewModule {
+export class CliModule {
   async perform(...args: unknown[]): Promise<string> {
     return (args?.[0] as string) ?? '';
   }

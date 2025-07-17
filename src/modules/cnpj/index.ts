@@ -1,8 +1,8 @@
 import { ValidationException } from '../../exceptions/Validation';
 import { NumbersHelper } from '../../helpers/numbers';
-import { NewModule } from '../module';
+import { CliModule } from '../module';
 
-export class CnpjModule extends NewModule {
+export class CnpjModule extends CliModule {
   private getOptions(options: Record<string, unknown>): string[] {
     return Object.keys(options);
   }

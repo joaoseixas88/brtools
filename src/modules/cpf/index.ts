@@ -1,7 +1,7 @@
 import { ValidationException } from '../../exceptions/Validation';
-import { NewModule } from '../module';
+import { CliModule } from '../module';
 
-export class Cpf extends NewModule {
+export class Cpf extends CliModule {
   private getOptions(options: Record<string, unknown>): string[] {
     return Object.keys(options);
   }

@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { ValidationException } from '../../exceptions/Validation';
-import { NewModule } from '../module';
+import { CliModule } from '../module';
 import { AlgorithmTypes } from './types';
 import { hash } from 'bcrypt';
 import fs from 'fs';
@@ -11,7 +11,7 @@ type HashOptions = {
   salt?: number;
 };
 
-export class HashModule extends NewModule {
+export class HashModule extends CliModule {
   override async perform(algorithm: AlgorithmTypes, options: HashOptions): Promise<string> {
     this.validateAlgo(algorithm);
     this.validateOptions(options);
