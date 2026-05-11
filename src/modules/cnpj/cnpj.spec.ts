@@ -31,6 +31,8 @@ describe('CNPJ', () => {
       expect(sut.validate('11111111111111')).toBe(false);
       expect(sut.validate('111')).toBe(false);
       expect(sut.validate('3.620.014/0001-04')).toBe(true);
+      expect(sut.validate('0R.K5Y.XY8/0001-19')).toBe(true);
+      expect(sut.validate('0R.K5Y.XY8/0001-20')).toBe(false);
     });
     it('should validate and complete a cpf thats starts with 0 and 0 is not present', () => {
       const sut = makeSut();
