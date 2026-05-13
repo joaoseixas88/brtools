@@ -14,7 +14,7 @@
 - Full local verification: `pnpm lint`, `pnpm build`, then `pnpm test`.
 - Release verification: `pnpm release:check` runs lint, build, tests, and `npm pack --dry-run`.
 - Publishing patch releases: `pnpm release:patch` runs verification, bumps patch version, and publishes with `--access public`; do not run it unless the user explicitly asks to publish.
-- GitHub Actions publishes on push to `main` only when `package.json` version is not already on npm; it requires the `NPM_TOKEN` repository secret.
+- GitHub Actions publishes on push to `main` only when `package.json` version is not already on npm; it uses npm Trusted Publishing/OIDC through `.github/workflows/publish.yml`.
 - Focused test: `pnpm exec jest src/modules/cpf/cpf.spec.ts --runInBand`.
 - Related-file test: `pnpm exec jest --findRelatedTests src/modules/cpf/index.ts`.
 - Local CLI smoke test: `pnpm build && node dist/index.js cpf --generate`.
