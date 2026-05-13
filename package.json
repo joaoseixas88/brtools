@@ -38,6 +38,10 @@
   ],
   "author": "Joao Seixas",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joaoseixas88/brtools"
+  },
   "packageManager": "pnpm@10.26.0",
   "engines": {
     "node": ">=20"
