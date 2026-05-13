@@ -2,7 +2,7 @@ import { createHash } from 'crypto';
 import { ValidationException } from '../../exceptions/Validation';
 import { CliModule } from '../module';
 import { AlgorithmTypes } from './types';
-import { hash } from 'bcrypt';
+import { hash } from 'bcryptjs';
 import fs from 'fs';
 
 type HashOptions = {
@@ -28,7 +28,7 @@ export class HashModule extends CliModule {
       case 'base64':
         return this.base64(options);
       default:
-        throw new ValidationException(`Algorítmo inválido: ${algorithm}`);
+        throw new ValidationException(`Algoritmo inválido: ${algorithm}`);
     }
   }
 
@@ -44,7 +44,7 @@ export class HashModule extends CliModule {
     const availableAlgos = ['bcrypt', 'md5', 'sha256', 'sha512', 'base64'];
     if (!availableAlgos.includes(algorithm)) {
       throw new ValidationException(
-        `Algorítmo não encontrado. Disponíveis: < ${availableAlgos.join(' | ')} >`,
+        `Algoritmo não encontrado. Disponíveis: < ${availableAlgos.join(' | ')} >`,
       );
     }
   }
