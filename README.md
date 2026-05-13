@@ -309,6 +309,8 @@ O pacote publicado usa o binário compilado em `dist/index.js`. Antes de empacot
 
 Use `pnpm release:check` para rodar lint, build, testes e conferir o conteúdo do pacote com `npm pack --dry-run`. Use `pnpm release:patch` apenas quando quiser criar uma nova versão patch e publicar no npm com acesso público.
 
+Ao fazer merge na branch `main`, o GitHub Actions publica automaticamente a versão do `package.json` se ela ainda não existir no npm. Para isso, configure o secret `NPM_TOKEN` no repositório do GitHub.
+
 ### Estrutura do Projeto
 
 ```bash
