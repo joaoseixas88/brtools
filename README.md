@@ -30,11 +30,19 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 
 ## 📦 Instalação
 
+Pré-requisito: Node.js 20 ou superior.
+
 ```bash
 npm install -g @joaoseixas/brtools
 ```
 
-> **Nota**: O projeto é buildado automaticamente durante a instalação, garantindo que você sempre tenha a versão mais atualizada.
+Também é possível executar sem instalação global:
+
+```bash
+npx @joaoseixas/brtools cpf --generate
+```
+
+> **Nota**: A opção `--copy` depende de suporte de clipboard no sistema. No Linux, pode ser necessário instalar `xclip`.
 
 ## 🛠️ Uso
 
@@ -270,32 +278,36 @@ src/
 
 ### Pré-requisitos
 
-- Node.js 16+
-- pnpm (recomendado) ou npm
+- Node.js 20+
+- pnpm
 
 ### Scripts Disponíveis
 
 ```bash
+# Instalar dependências
+pnpm install --frozen-lockfile
+
 # Compilar o projeto
-npm run build
+pnpm build
 
 # Executar testes
-npm run test
+pnpm test
 
-# Instalar dependências
-pnpm install
+# Executar lint
+pnpm lint
 
-# Fazer build e criar nova versão patch
-npm run v:patch
+# Validar o pacote antes de publicar
+pnpm release:check
+
+# Validar, criar versão patch e publicar no npm
+pnpm release:patch
 ```
 
-### Instalação Automática
+### Publicação
 
-O projeto está configurado com um script `prepare` que:
+O pacote publicado usa o binário compilado em `dist/index.js`. Antes de empacotar, o script `prepack` executa `pnpm build` para garantir que o `dist/` esteja atualizado.
 
-- Compila automaticamente o TypeScript durante a instalação
-- Garante que os usuários sempre tenham a versão mais recente
-- Não requer distribuição da pasta `dist` no repositório
+Use `pnpm release:check` para rodar lint, build, testes e conferir o conteúdo do pacote com `npm pack --dry-run`. Use `pnpm release:patch` apenas quando quiser criar uma nova versão patch e publicar no npm com acesso público.
 
 ### Estrutura do Projeto
 
@@ -369,7 +381,7 @@ export default function (program: Command) {
 - **Commander.js**: Framework para CLI
 - **Chalk**: Colorização de output
 - **Copy-paste**: Funcionalidade de clipboard
-- **bcrypt**: Biblioteca para hash seguro de senhas
+- **bcryptjs**: Biblioteca para hash seguro de senhas sem dependência nativa
 - **Jest**: Framework de testes
 - **Node.js**: Runtime
 
