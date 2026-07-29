@@ -28,6 +28,14 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 - 🔒 **Hashes Seguros**: bcrypt para senhas, SHA256/SHA512 para integridade
 - 📋 **Cópia para Clipboard**: Copia automaticamente o hash gerado
 
+### Person
+
+- 👤 **Dados Pessoais**: Gera nome, sobrenome, nome completo, CPF, telefone, RG e mais
+- 📧 **E-mail Flexível**: Gera e-mails aleatórios ou derivados de nome com domínio customizável
+- 🪪 **Perfil Completo**: Monta um perfil brasileiro simples com múltiplos campos em uma única execução
+- 🚻 **Gênero Coerente**: `--gender` alinha o nome sorteado com o campo de gênero do perfil
+- 🧾 **Saída em JSON**: Permite uso em automações com a opção `--json`
+
 ## 📦 Instalação
 
 Pré-requisito: Node.js 20 ou superior.
@@ -161,6 +169,71 @@ brtools hash base64 --file "./logo.png"
 brtools hash sha512 --file "./arquivo.pdf" --copy
 ```
 
+### Comando Person
+
+#### Gerar dados unitários
+
+```bash
+# Gerar um nome
+brtools person name
+
+# Gerar um nome de um gênero específico
+brtools person name --gender feminino
+
+# Gerar um sobrenome
+brtools person surname
+
+# Gerar um nome completo
+brtools person full-name
+
+# Gerar um nome completo masculino
+brtools person full-name --gender m
+
+# Gerar um CPF formatado
+brtools person cpf --formatted
+
+# Gerar um celular formatado
+brtools person phone --formatted
+
+# Gerar um CEP em JSON
+brtools person cep --json
+```
+
+#### Gerar e-mail
+
+```bash
+# Gerar e-mail aleatório
+brtools person email
+
+# Gerar e-mail derivado de nome completo
+brtools person email --name "João Silva"
+
+# Gerar e-mail derivado de nome e sobrenome com domínio customizado
+brtools person email --first-name "Maria" --surname "Souza" --domain empresa.com.br
+```
+
+#### Gerar perfil completo
+
+```bash
+# Gerar perfil completo em texto
+brtools person profile --formatted
+
+# Gerar perfil completo em JSON
+brtools person profile --formatted --json
+
+# Gerar o perfil de um gênero específico (nome e campo gênero coerentes)
+brtools person profile --gender feminino
+
+# Gerar o perfil de uma pessoa com nome definido por você
+brtools person profile --name "Thaís D'Ávila" --json
+```
+
+O e-mail do perfil é derivado do nome, sorteando entre seis combinações
+(`joao.silva`, `joao_silva`, `joaosilva`, `j.silva`, `joao.s`, `silva.joao`),
+com sufixo numérico em parte dos casos. O nome é saneado para gerar um e-mail
+sempre válido: acentos e cedilha são convertidos, apóstrofos e hífens removidos,
+e o resultado é limitado aos 64 caracteres do RFC 5321.
+
 ### Opções Globais
 
 | Opção                        | Descrição                                      |
@@ -172,7 +245,10 @@ brtools hash sha512 --file "./arquivo.pdf" --copy
 | `-f, --file <arquivo>`       | Arquivo a ser processado/hasheado              |
 | `-s, --salt <salt>`          | Salt para algoritmo bcrypt (padrão: 10)       |
 | `-c, --copy`                 | Copia o resultado para a área de transferência |
+| `-j, --json`                 | Retorna o resultado em JSON                    |
 | `-f, --formatted`            | Formata o documento no padrão brasileiro       |
+| `-g, --gender <gênero>`      | Gênero em `person`: masculino \| feminino \| m \| f |
+| `--name <nome>`              | Nome completo usado por `person email/profile` |
 | `--version`                  | Mostra a versão da ferramenta                  |
 | `--help`                     | Mostra ajuda                                   |
 
@@ -218,6 +294,19 @@ brtools hash base64 --file "./imagem.png"
 # Hash SHA-512 com cópia para clipboard
 brtools hash sha512 --text "texto seguro" --copy
 # Output: a1b2c3d4e5f6...  ✅ Copiado para a área de transferência
+
+# Gerar nome completo
+brtools person full-name
+# Output: João Pereira
+
+# Gerar e-mail em JSON
+brtools person email --name "Maria Souza" --json
+# Output: {"email":"maria.souza42@gmail.com"}
+
+# Gerar perfil completo formatado
+brtools person profile --formatted
+# Output: Nome completo: Ana Costa
+...demais campos...
 ```
 
 ## 🏗️ Arquitetura
@@ -245,6 +334,11 @@ src/
 │   │   ├── index.ts   # Lógica principal do hash
 │   │   ├── commander.ts  # Configuração de comandos
 │   │   └── types.ts   # Tipos para algoritmos de hash
+│   ├── person/        # Módulo de dados pessoais
+│   │   ├── index.ts   # Lógica principal do módulo person
+│   │   ├── commander.ts  # Configuração do comando person
+│   │   ├── person.spec.ts  # Testes do módulo
+│   │   └── types.ts   # Tipos do perfil de pessoa
 │   └── module.ts      # Classe base abstrata
 ├── services/           # Serviços compartilhados
 │   └── logger.ts      # Sistema de logging colorido
@@ -259,6 +353,7 @@ src/
 - **CPF Module**: Implementa todas as operações relacionadas a CPF
 - **CNPJ Module**: Implementa todas as operações relacionadas a CNPJ
 - **Hash Module**: Implementa hash de textos e arquivos com múltiplos algoritmos (bcrypt, MD5, SHA256, SHA512, Base64)
+- **Person Module**: Implementa geração de dados pessoais brasileiros unitários e em perfil completo
 - **Logger Service**: Fornece logging colorido com chalk
 - **ValidationException**: Tratamento especializado de erros de validação
 - **NumbersHelper**: Funções utilitárias para manipulação de números
