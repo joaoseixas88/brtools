@@ -1,5 +1,15 @@
 import { ValidationException } from '../../exceptions/Validation';
+import { isStdinSentinel, readStdinLines } from '../../helpers/stdin';
 import { CliModule } from '../module';
+
+type CpfOptions = {
+  generate?: boolean;
+  validate?: string;
+  digits?: string;
+  formatted?: boolean;
+  json?: boolean;
+  count?: string;
+};
 
 export class Cpf extends CliModule {
   private getOptions(options: Record<string, unknown>): string[] {
@@ -19,23 +29,75 @@ export class Cpf extends CliModule {
     return action;
   }
 
-  override async perform(options: {
-    generate?: boolean;
-    validate?: string;
-    digits?: string;
-  }): Promise<string> {
+  override async perform(options: CpfOptions): Promise<string> {
     const action = this.validateParams(options);
-    const result = {
-      generate: () => this.generate(options),
-      validate: () => {
-        const isValid = this.validate(options.validate);
-        return isValid ? '✅ CPF válido' : '❌ CPF inválido';
-      },
-      digits: () => {
-        return `Dígitos verificadores: ${this.digits(options.digits)}`;
-      },
-    }[action]!();
-    return result;
+
+    if (action !== 'generate' && options.count !== undefined) {
+      throw new ValidationException('--count só se aplica à geração de CPF');
+    }
+
+    if (action === 'validate') {
+      return this.runValidate(options);
+    }
+
+    if (action === 'digits') {
+      return this.runDigits(options);
+    }
+
+    const cpf = this.generate(options);
+    return options.json ? JSON.stringify({ cpf }) : cpf;
+  }
+
+  private label(isValid: boolean) {
+    return isValid ? '✅ CPF válido' : '❌ CPF inválido';
+  }
+
+  private async resolveInputs(value: string, emptyMessage: string) {
+    if (!isStdinSentinel(value)) {
+      return [value];
+    }
+
+    const lines = await readStdinLines();
+
+    if (!lines.length) {
+      throw new ValidationException(emptyMessage);
+    }
+
+    return lines;
+  }
+
+  private async runValidate(options: CpfOptions) {
+    const documents = await this.resolveInputs(options.validate, 'Nenhum CPF recebido pelo stdin');
+    const results = documents.map((document) => ({ document, valid: this.validate(document) }));
+
+    if (results.some((result) => !result.valid)) {
+      this.markInvalid();
+    }
+
+    if (options.json) {
+      return JSON.stringify(results.length === 1 ? results[0] : results);
+    }
+
+    if (results.length === 1) {
+      return this.label(results[0].valid);
+    }
+
+    return results.map((result) => `${result.document}  ${this.label(result.valid)}`).join('\n');
+  }
+
+  private async runDigits(options: CpfOptions) {
+    const bases = await this.resolveInputs(options.digits, 'Nenhum número recebido pelo stdin');
+    const results = bases.map((base) => ({ base, digits: this.digits(base) }));
+
+    if (options.json) {
+      return JSON.stringify(results.length === 1 ? results[0] : results);
+    }
+
+    if (results.length === 1) {
+      return `Dígitos verificadores: ${results[0].digits}`;
+    }
+
+    return results.map((result) => `${result.base}  ${result.digits}`).join('\n');
   }
 
   private calculateWeightedSum(base: string, length: number): number {
