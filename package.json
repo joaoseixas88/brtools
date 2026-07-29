@@ -32,15 +32,27 @@
   "keywords": [
     "cli",
     "brasil",
+    "brazil",
     "cpf",
     "cnpj",
+    "rg",
+    "cep",
+    "telefone",
+    "person",
+    "pessoa",
+    "faker",
+    "gerador",
+    "dados-falsos",
+    "test-data",
+    "fake-data",
+    "hash",
     "utils"
   ],
   "author": "Joao Seixas",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joaoseixas88/brtools"
+    "url": "git+https://github.com/joaoseixas88/brtools.git"
   },
   "packageManager": "pnpm@10.26.0",
   "engines": {
