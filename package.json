@@ -44,12 +44,12 @@
   },
   "packageManager": "pnpm@10.26.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "chalk": "^4.1.2",
-    "commander": "^14.0.0",
+    "commander": "^13.1.0",
     "copy-paste": "^2.2.0"
   },
   "devDependencies": {

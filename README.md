@@ -30,7 +30,7 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 
 ## 📦 Instalação
 
-Pré-requisito: Node.js 20 ou superior.
+Pré-requisito: Node.js 18 ou superior.
 
 ```bash
 npm install -g @joaoseixas/brtools
