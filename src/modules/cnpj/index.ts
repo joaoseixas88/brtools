@@ -1,6 +1,16 @@
 import { ValidationException } from '../../exceptions/Validation';
 import { NumbersHelper } from '../../helpers/numbers';
+import { isStdinSentinel, readStdinLines } from '../../helpers/stdin';
 import { CliModule } from '../module';
+
+type CnpjOptions = {
+  generate?: boolean;
+  validate?: string;
+  digits?: string;
+  formatted?: boolean;
+  json?: boolean;
+  count?: string;
+};
 
 export class CnpjModule extends CliModule {
   private getOptions(options: Record<string, unknown>): string[] {
@@ -18,23 +28,75 @@ export class CnpjModule extends CliModule {
     const action = selectedActions[0] ?? 'generate';
     return action;
   }
-  override async perform(options: {
-    generate?: boolean;
-    validate?: string;
-    digits?: string;
-  }): Promise<string> {
+  override async perform(options: CnpjOptions): Promise<string> {
     const action = this.validateParams(options);
-    const result = {
-      generate: () => this.generate(options as { formatted?: boolean }),
-      validate: () => {
-        const isValid = this.validate(options.validate);
-        return isValid ? '✅ CNPJ válido' : '❌ CNPJ inválido';
-      },
-      digits: () => {
-        return this.digits(options.digits);
-      },
-    }[action]!();
-    return result;
+
+    if (action !== 'generate' && options.count !== undefined) {
+      throw new ValidationException('--count só se aplica à geração de CNPJ');
+    }
+
+    if (action === 'validate') {
+      return this.runValidate(options);
+    }
+
+    if (action === 'digits') {
+      return this.runDigits(options);
+    }
+
+    const cnpj = this.generate(options);
+    return options.json ? JSON.stringify({ cnpj }) : cnpj;
+  }
+
+  private label(isValid: boolean) {
+    return isValid ? '✅ CNPJ válido' : '❌ CNPJ inválido';
+  }
+
+  private async resolveInputs(value: string, emptyMessage: string) {
+    if (!isStdinSentinel(value)) {
+      return [value];
+    }
+
+    const lines = await readStdinLines();
+
+    if (!lines.length) {
+      throw new ValidationException(emptyMessage);
+    }
+
+    return lines;
+  }
+
+  private async runValidate(options: CnpjOptions) {
+    const documents = await this.resolveInputs(options.validate, 'Nenhum CNPJ recebido pelo stdin');
+    const results = documents.map((document) => ({ document, valid: this.validate(document) }));
+
+    if (results.some((result) => !result.valid)) {
+      this.markInvalid();
+    }
+
+    if (options.json) {
+      return JSON.stringify(results.length === 1 ? results[0] : results);
+    }
+
+    if (results.length === 1) {
+      return this.label(results[0].valid);
+    }
+
+    return results.map((result) => `${result.document}  ${this.label(result.valid)}`).join('\n');
+  }
+
+  private async runDigits(options: CnpjOptions) {
+    const bases = await this.resolveInputs(options.digits, 'Nenhum número recebido pelo stdin');
+    const results = bases.map((base) => ({ base, digits: this.digits(base) }));
+
+    if (options.json) {
+      return JSON.stringify(results.length === 1 ? results[0] : results);
+    }
+
+    if (results.length === 1) {
+      return `Dígitos verificadores: ${results[0].digits}`;
+    }
+
+    return results.map((result) => `${result.base}  ${result.digits}`).join('\n');
   }
 
   private asciiMinus48(val: string) {
@@ -92,7 +154,7 @@ export class CnpjModule extends CliModule {
     }
     const firstDigit = this.verifyDigit(base);
     const secondDigit = this.verifyDigit(`${base}${firstDigit}`);
-    return `Digitaos verificadores: ${firstDigit}${secondDigit}`;
+    return `${firstDigit}${secondDigit}`;
   }
 
   private format(cnpj: string) {

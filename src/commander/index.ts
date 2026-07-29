@@ -4,6 +4,7 @@ import { Command, program } from 'commander';
 import { readdir } from 'fs/promises';
 import path from 'path';
 import { description, name, version } from '../../package.json';
+import { checkForUpdate } from '../services/updateNotice';
 
 export class ProgramStarter {
   isCommanderFile(path: string) {
@@ -22,9 +23,11 @@ export class ProgramStarter {
 
   async start() {
     await this.buildOptions(program);
+    await checkForUpdate(name, version);
     program
+      .enablePositionalOptions()
       .name(name)
-      .version(version)
+      .version(version, '-v, --version')
       .description(description || 'A CLI tool to help you with your daily tasks');
     program.parse(process.argv);
   }

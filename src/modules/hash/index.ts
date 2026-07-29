@@ -3,12 +3,14 @@ import { ValidationException } from '../../exceptions/Validation';
 import { CliModule } from '../module';
 import { AlgorithmTypes } from './types';
 import { hash } from 'bcryptjs';
+import { isStdinSentinel, readStdin } from '../../helpers/stdin';
 import fs from 'fs';
 
 type HashOptions = {
   text?: string;
   file?: string;
   salt?: number;
+  json?: boolean;
 };
 
 export class HashModule extends CliModule {
@@ -16,6 +18,16 @@ export class HashModule extends CliModule {
     this.validateAlgo(algorithm);
     this.validateOptions(options);
 
+    if (isStdinSentinel(options.text)) {
+      options = { ...options, text: await readStdin() };
+    }
+
+    const hashValue = await this.run(algorithm, options);
+
+    return options.json ? JSON.stringify({ algorithm, hash: hashValue }) : hashValue;
+  }
+
+  private async run(algorithm: AlgorithmTypes, options: HashOptions): Promise<string> {
     switch (algorithm) {
       case 'bcrypt':
         return this.bcrypt(options);

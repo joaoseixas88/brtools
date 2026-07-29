@@ -248,9 +248,74 @@ e o resultado é limitado aos 64 caracteres do RFC 5321.
 | `-j, --json`                 | Retorna o resultado em JSON                    |
 | `-f, --formatted`            | Formata o documento no padrão brasileiro       |
 | `-g, --gender <gênero>`      | Gênero em `person`: masculino \| feminino \| m \| f |
+| `-n, --count <n>`            | Gera vários itens de uma vez (valores únicos)  |
 | `--name <nome>`              | Nome completo usado por `person email/profile` |
-| `--version`                  | Mostra a versão da ferramenta                  |
+| `-v, --version`              | Mostra a versão da ferramenta                  |
 | `--help`                     | Mostra ajuda                                   |
+
+## 🔁 Geração em lote
+
+Use `--count` para gerar vários itens de uma vez. Os valores são garantidamente
+únicos dentro do lote, o que evita colisão ao popular tabela com coluna única.
+
+```bash
+# 100 CPFs, um por linha
+brtools cpf --generate --count 100
+
+# 50 CNPJs formatados direto para um arquivo
+brtools cnpj --generate --formatted --count 50 > cnpjs.txt
+
+# 10 perfis completos como array JSON
+brtools person profile --count 10 --json
+```
+
+Com `--json`, a saída é um array. O limite é 10.000 itens por execução, e
+`--count` só se aplica à geração — usar junto de `--validate` é erro.
+
+## 📥 Lendo do stdin
+
+Passe `-` no lugar do valor para ler da entrada padrão, uma ocorrência por linha:
+
+```bash
+# Validar uma lista de CPFs
+cat cpfs.txt | brtools cpf --validate -
+
+# Dígitos verificadores de vários CNPJs
+cat bases.txt | brtools cnpj --digits -
+
+# Hash do conteúdo que vem pelo pipe
+cat contrato.pdf | brtools hash sha256 --text -
+```
+
+Saída da validação em lote:
+
+```
+86112763702  ✅ CPF válido
+11111111111  ❌ CPF inválido
+```
+
+## ↩️ Códigos de saída
+
+| Código | Significado                                         |
+| ------ | --------------------------------------------------- |
+| `0`    | Sucesso — e, na validação, documento válido          |
+| `1`    | Documento inválido (qualquer linha, no modo lote)    |
+| `2`    | Erro de uso: opção inválida, entrada vazia, etc.     |
+
+Isso permite usar a CLI em script:
+
+```bash
+if brtools cpf --validate "$documento" > /dev/null; then
+  echo "documento ok"
+fi
+```
+
+## 🔔 Aviso de versão
+
+Quando há versão nova, a CLI avisa **no stderr** — nunca no stdout, para não
+contaminar pipes. A consulta ao registry acontece no máximo uma vez por dia e é
+silenciosa quando a saída não é um terminal. Para desligar, defina
+`NO_UPDATE_NOTIFIER=1` (ou rode em CI, onde já é automático).
 
 ## 📋 Exemplos
 
