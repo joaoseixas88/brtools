@@ -11,7 +11,14 @@ function appendCommonOptions(command: Command) {
   return command
     .option('-c, --copy', 'Copia o resultado para o clipboard')
     .option('-j, --json', 'Retorna o resultado em JSON')
-    .option('-f, --formatted', 'Formata o dado gerado quando aplicável');
+    .option('-n, --count <count>', 'Quantidade de itens a gerar');
+}
+
+function appendFormattableOptions(command: Command) {
+  return appendCommonOptions(command).option(
+    '-f, --formatted',
+    'Formata o dado gerado quando aplicável',
+  );
 }
 
 export default function (program: Command) {
@@ -49,15 +56,15 @@ export default function (program: Command) {
       .option('--domain <domain>', 'Domínio customizado para o e-mail'),
   ).action(createAction('email'));
 
-  appendCommonOptions(personCommand.command('cpf').description('Gera um CPF válido')).action(
+  appendFormattableOptions(personCommand.command('cpf').description('Gera um CPF válido')).action(
     createAction('cpf'),
   );
 
-  appendCommonOptions(
+  appendFormattableOptions(
     personCommand.command('phone').description('Gera um celular brasileiro válido'),
   ).action(createAction('phone'));
 
-  appendCommonOptions(
+  appendFormattableOptions(
     personCommand.command('birthdate').description('Gera uma data de nascimento'),
   ).action(createAction('birthdate'));
 
@@ -65,19 +72,19 @@ export default function (program: Command) {
     createAction('gender'),
   );
 
-  appendCommonOptions(personCommand.command('cep').description('Gera um CEP válido')).action(
+  appendFormattableOptions(personCommand.command('cep').description('Gera um CEP válido')).action(
     createAction('cep'),
   );
 
-  appendCommonOptions(
+  appendFormattableOptions(
     personCommand.command('address').description('Gera um endereço brasileiro simples'),
   ).action(createAction('address'));
 
-  appendCommonOptions(personCommand.command('rg').description('Gera um RG plausível')).action(
+  appendFormattableOptions(personCommand.command('rg').description('Gera um RG plausível')).action(
     createAction('rg'),
   );
 
-  appendCommonOptions(
+  appendFormattableOptions(
     personCommand
       .command('profile')
       .description('Gera um perfil completo')
