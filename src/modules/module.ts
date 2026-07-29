@@ -3,7 +3,7 @@ import { logger } from '../services/logger';
 import fs from 'fs';
 import path from 'path';
 import readline from 'readline/promises';
-import { stdin as input, stdout as output } from 'process';
+import { stdin as input, stderr } from 'process';
 
 export class CliModule {
   async perform(...args: unknown[]): Promise<string> {
@@ -15,11 +15,11 @@ export class CliModule {
       const outputStr = await this.perform(...args);
       const shouldCopy = args.some((v) => typeof v === 'object' && v['copy'] !== undefined);
 
-      const isLarge = outputStr.length > 10_000;
+      const isLarge = outputStr.length > 10_000 && process.stdin.isTTY && process.stdout.isTTY;
 
       if (isLarge) {
         logger.warn(`⚠️   O resultado gerado é muito grande (${outputStr.length} caracteres).`);
-        const rl = readline.createInterface({ input, output });
+        const rl = readline.createInterface({ input, output: stderr });
         const answer = await rl.question(
           'Deseja salvar em um arquivo .txt em vez de copiar? (s/N): ',
         );
@@ -35,22 +35,25 @@ export class CliModule {
 
       if (shouldCopy) {
         await copy(outputStr)
-          .then(() => {
-            logger.info(
-              `${isLarge ? '[parcial] ' : outputStr}  ✅Copiado para a área de transferência`,
-            );
+          .then(async () => {
+            if (isLarge) {
+              logger.info('[parcial] ✅ Copiado para a área de transferência');
+              return;
+            }
+            await logger.result(outputStr);
+            logger.info('✅ Copiado para a área de transferência');
           })
-          .catch((err) => {
+          .catch(async (err) => {
             if (err.path === 'xclip') {
               logger.error('Erro ao copiar para a área de transferência');
               logger.warn(
                 'xclip não encontrado: necessário para copiar no Linux. Instale com: sudo apt install xclip',
               );
-              logger.info(outputStr);
+              await logger.result(outputStr);
             }
           });
       } else {
-        logger.info(outputStr);
+        await logger.result(outputStr);
       }
     } catch (error) {
       if (error?.name === 'ValidationException') {
