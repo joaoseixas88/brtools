@@ -19,6 +19,8 @@ export type PersonProfile = {
   cep: string;
   address: PersonAddress;
   rg: string;
+  password: string;
+  passwordHash: string;
 };
 
 export type PersonAction =
@@ -33,6 +35,7 @@ export type PersonAction =
   | 'cep'
   | 'address'
   | 'rg'
+  | 'password'
   | 'profile';
 
 export type PersonCommandOptions = {
@@ -44,4 +47,6 @@ export type PersonCommandOptions = {
   surname?: string;
   domain?: string;
   gender?: string;
+  length?: string | number;
+  salt?: string | number;
 };

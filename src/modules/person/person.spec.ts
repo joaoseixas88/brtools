@@ -1,3 +1,4 @@
+import { compare } from 'bcryptjs';
 import { PersonModule } from '.';
 
 const makeSut = () => new PersonModule();
@@ -188,8 +189,134 @@ describe('Person Module', () => {
         cep: expect.stringMatching(/^\d{5}-\d{3}$/),
       },
       rg: expect.stringMatching(/^\d{2}\.\d{3}\.\d{3}-\d$/),
+      password: expect.any(String),
+      passwordHash: expect.stringMatching(/^\$2[aby]\$\d{2}\$/),
     });
     expect(sut['cpfModule'].validate(parsed.cpf)).toBe(true);
+  });
+
+  describe('password', () => {
+    const strongPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%&*?\-_]).{8,}$/;
+
+    it('should generate a strong password with the default length', async () => {
+      const sut = makeSut();
+
+      for (let index = 0; index < 200; index++) {
+        const password = await sut.perform('password', {});
+
+        expect(password).toHaveLength(12);
+        expect(password).toMatch(strongPattern);
+      }
+    });
+
+    it('should honour a custom length', async () => {
+      const sut = makeSut();
+
+      const password = await sut.perform('password', { length: 32 });
+
+      expect(password).toHaveLength(32);
+      expect(password).toMatch(strongPattern);
+    });
+
+    it('should reject a length outside the supported range', async () => {
+      const sut = makeSut();
+
+      await expect(sut.perform('password', { length: 7 })).rejects.toThrow(/--length/);
+      await expect(sut.perform('password', { length: 65 })).rejects.toThrow(/--length/);
+      await expect(sut.perform('password', { length: 'abc' })).rejects.toThrow(/--length/);
+    });
+
+    it('should return the password in json mode', async () => {
+      const sut = makeSut();
+
+      const result = await sut.perform('password', { json: true });
+
+      expect(JSON.parse(result)).toEqual({ password: expect.stringMatching(strongPattern) });
+    });
+
+    it('should hash the profile password with bcrypt', async () => {
+      const sut = makeSut();
+
+      const parsed = JSON.parse(await sut.perform('profile', { json: true, salt: 4 }));
+
+      expect(parsed.password).toMatch(strongPattern);
+      expect(await compare(parsed.password, parsed.passwordHash)).toBe(true);
+    });
+
+    it('should reject a salt outside the supported range', async () => {
+      const sut = makeSut();
+
+      await expect(sut.perform('profile', { salt: 3 })).rejects.toThrow(/--salt/);
+      await expect(sut.perform('profile', { salt: 16 })).rejects.toThrow(/--salt/);
+    });
+
+    it('should print the password and its hash in text mode', async () => {
+      const sut = makeSut();
+
+      const result = await sut.perform('profile', { salt: 4 });
+
+      expect(result).toMatch(/\nSenha: \S{12}\n/);
+      expect(result).toMatch(/\nHash da senha: \$2[aby]\$\d{2}\$\S+$/);
+    });
+  });
+
+  describe('batch output', () => {
+    it('should emit profiles as json objects instead of formatted text', async () => {
+      const sut = makeSut();
+
+      const output = await sut['performMany'](3, ['profile', { formatted: true, salt: 4 }], true);
+      const parsed = JSON.parse(output);
+
+      expect(parsed).toHaveLength(3);
+      parsed.forEach((profile) => {
+        expect(profile.fullName).toEqual(expect.any(String));
+        expect(sut['cpfModule'].validate(profile.cpf)).toBe(true);
+        expect(profile.address.city).toEqual(expect.any(String));
+        expect(profile.passwordHash).toMatch(/^\$2[aby]\$\d{2}\$/);
+      });
+    });
+
+    it('should emit addresses as json objects', async () => {
+      const sut = makeSut();
+
+      const output = await sut['performMany'](3, ['address', {}], true);
+      const parsed = JSON.parse(output);
+
+      expect(parsed).toHaveLength(3);
+      parsed.forEach((address) => {
+        expect(address.street).toEqual(expect.any(String));
+        expect(address.cep).toMatch(/^\d{8}$/);
+      });
+    });
+
+    it('should keep scalar generators as json strings', async () => {
+      const sut = makeSut();
+
+      const output = await sut['performMany'](3, ['password', {}], true);
+      const parsed = JSON.parse(output);
+
+      expect(parsed).toHaveLength(3);
+      parsed.forEach((password) => expect(typeof password).toBe('string'));
+    });
+
+    it('should separate multi line records with a blank line', async () => {
+      const sut = makeSut();
+
+      const output = await sut['performMany'](3, ['profile', { salt: 4 }], false);
+      const records = output.split('\n\n');
+
+      expect(records).toHaveLength(3);
+      records.forEach((record) => expect(record).toMatch(/^Nome completo: /));
+    });
+
+    it('should keep single line records one per line', async () => {
+      const sut = makeSut();
+
+      const output = await sut['performMany'](3, ['address', {}], false);
+
+      expect(output.split('\n')).toHaveLength(3);
+      expect(output).not.toMatch(/\n\s*\n/);
+    });
   });
 
   describe('gender option', () => {
