@@ -4,6 +4,7 @@ import { CliModule } from '../module';
 import { AlgorithmTypes } from './types';
 import { hash } from 'bcryptjs';
 import { isStdinSentinel, readStdin } from '../../helpers/stdin';
+import { generatePassword, resolvePasswordLength } from '../../helpers/password';
 import fs from 'fs';
 
 type HashOptions = {
@@ -11,11 +12,19 @@ type HashOptions = {
   file?: string;
   salt?: number;
   json?: boolean;
+  password?: string | boolean;
 };
 
 export class HashModule extends CliModule {
   override async perform(algorithm: AlgorithmTypes, options: HashOptions): Promise<string> {
     this.validateAlgo(algorithm);
+
+    const password = this.resolveGeneratedPassword(options);
+
+    if (password) {
+      options = { ...options, text: password };
+    }
+
     this.validateOptions(options);
 
     if (isStdinSentinel(options.text)) {
@@ -24,7 +33,25 @@ export class HashModule extends CliModule {
 
     const hashValue = await this.run(algorithm, options);
 
+    if (password) {
+      return options.json
+        ? JSON.stringify({ algorithm, password, hash: hashValue })
+        : `Senha: ${password}\nHash: ${hashValue}`;
+    }
+
     return options.json ? JSON.stringify({ algorithm, hash: hashValue }) : hashValue;
+  }
+
+  private resolveGeneratedPassword(options: HashOptions) {
+    if (options.password === undefined) {
+      return null;
+    }
+
+    if (options.text || options.file) {
+      throw new ValidationException('Use --password sozinho, sem --text ou --file');
+    }
+
+    return generatePassword(resolvePasswordLength(options.password));
   }
 
   private async run(algorithm: AlgorithmTypes, options: HashOptions): Promise<string> {
