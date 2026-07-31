@@ -1,4 +1,5 @@
 import { ValidationException } from '../../exceptions/Validation';
+import { generatePassword, hashPassword, resolvePasswordLength } from '../../helpers/password';
 import { CliModule } from '../module';
 import { Cpf } from '../cpf';
 import {
@@ -43,7 +44,7 @@ export class PersonModule extends CliModule {
 
   override async perform(action: PersonAction, options: PersonCommandOptions): Promise<string> {
     const formatted = Boolean(options.formatted);
-    const result = this.execute(action, options, formatted);
+    const result = await this.execute(action, options, formatted);
 
     if (options.json) {
       return this.serializeJson(action, result);
@@ -52,7 +53,11 @@ export class PersonModule extends CliModule {
     return this.serializeText(action, result);
   }
 
-  private execute(action: PersonAction, options: PersonCommandOptions, formatted: boolean) {
+  protected override async performValue(action: PersonAction, options: PersonCommandOptions) {
+    return this.execute(action, options, Boolean(options.formatted));
+  }
+
+  private async execute(action: PersonAction, options: PersonCommandOptions, formatted: boolean) {
     switch (action) {
       case 'name':
         return this.generateName(this.resolveSex(options));
@@ -76,6 +81,8 @@ export class PersonModule extends CliModule {
         return this.generateAddress(formatted);
       case 'rg':
         return this.generateRg(formatted);
+      case 'password':
+        return this.generatePassword(options);
       case 'profile':
         return this.generateProfile(options, formatted);
       default:
@@ -265,7 +272,14 @@ export class PersonModule extends CliModule {
     return `${rg.slice(0, 2)}.${rg.slice(2, 5)}.${rg.slice(5, 8)}-${rg.slice(8)}`;
   }
 
-  private generateProfile(options: PersonCommandOptions, formatted: boolean): PersonProfile {
+  private generatePassword(options: PersonCommandOptions) {
+    return generatePassword(resolvePasswordLength(options.length));
+  }
+
+  private async generateProfile(
+    options: PersonCommandOptions,
+    formatted: boolean,
+  ): Promise<PersonProfile> {
     const sex = this.resolveSex(options);
     const suppliedName = this.resolveSuppliedName(options);
     const firstName = suppliedName ? suppliedName.firstName : this.generateName(sex);
@@ -274,6 +288,7 @@ export class PersonModule extends CliModule {
       ? suppliedName.fullName
       : `${firstName}${surname ? ` ${surname}` : ''}`;
     const address = this.generateAddress(formatted);
+    const password = this.generatePassword(options);
 
     return {
       fullName,
@@ -285,6 +300,8 @@ export class PersonModule extends CliModule {
       cep: this.generateCep(formatted),
       address,
       rg: this.generateRg(formatted),
+      password,
+      passwordHash: await hashPassword(password, options.salt),
     };
   }
 
@@ -323,6 +340,8 @@ export class PersonModule extends CliModule {
       `CEP: ${profile.cep}`,
       `Endereço: ${this.formatAddress(profile.address)}`,
       `RG: ${profile.rg}`,
+      `Senha: ${profile.password}`,
+      `Hash da senha: ${profile.passwordHash}`,
     ].join('\n');
   }
 
@@ -339,6 +358,7 @@ export class PersonModule extends CliModule {
       cep: 'cep',
       address: 'address',
       rg: 'rg',
+      password: 'password',
       profile: 'profile',
     };
 

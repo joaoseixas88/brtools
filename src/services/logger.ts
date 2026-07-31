@@ -23,7 +23,7 @@ export class Logger {
       return;
     }
     await new Promise<void>((resolve, reject) => {
-      process.stdout.write(value, (error) => (error ? reject(error) : resolve()));
+      process.stdout.write(`${value}\n`, (error) => (error ? reject(error) : resolve()));
     });
   }
 }

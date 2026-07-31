@@ -64,6 +64,27 @@ describe('shared cli behaviour', () => {
       parsed.forEach((value: string) => expect(typeof value).toBe('string'));
     });
 
+    it('should keep one value per line so the output stays pipe safe', async () => {
+      const sut = new Cpf();
+
+      const output = await sut['performMany'](20, [{ generate: true }], false);
+
+      expect(output.split('\n')).toHaveLength(20);
+      expect(output).not.toMatch(/\n\s*\n/);
+      expect(output).not.toMatch(/\n$/);
+    });
+
+    it('should still emit an array when a single item is requested', async () => {
+      const sut = new Cpf();
+
+      const output = await sut['performMany'](1, [{ generate: true }], true);
+      const parsed = JSON.parse(output);
+
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed).toHaveLength(1);
+      expect(sut.validate(parsed[0])).toBe(true);
+    });
+
     it('should fail when the pool cannot satisfy the count', async () => {
       const sut = new Cpf();
       jest.spyOn(sut, 'generate').mockReturnValue('11111111111');

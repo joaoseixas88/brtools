@@ -26,6 +26,7 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 - 📄 **Texto e Arquivos**: Processa tanto textos quanto arquivos
 - ⚙️ **Salt Configurável**: Permite configurar o salt para bcrypt (padrão: 10)
 - 🔒 **Hashes Seguros**: bcrypt para senhas, SHA256/SHA512 para integridade
+- 🔑 **Gerador de Senha**: `--password` cria uma senha forte e devolve a senha junto do hash
 - 📋 **Cópia para Clipboard**: Copia automaticamente o hash gerado
 
 ### Person
@@ -34,6 +35,7 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 - 📧 **E-mail Flexível**: Gera e-mails aleatórios ou derivados de nome com domínio customizável
 - 🪪 **Perfil Completo**: Monta um perfil brasileiro simples com múltiplos campos em uma única execução
 - 🚻 **Gênero Coerente**: `--gender` alinha o nome sorteado com o campo de gênero do perfil
+- 🔑 **Senha Forte**: Gera senha no padrão comum (maiúscula, minúscula, dígito e símbolo) já com hash bcrypt no perfil
 - 🧾 **Saída em JSON**: Permite uso em automações com a opção `--json`
 
 ## 📦 Instalação
@@ -169,6 +171,29 @@ brtools hash base64 --file "./logo.png"
 brtools hash sha512 --file "./arquivo.pdf" --copy
 ```
 
+#### Gerar e hashear uma senha
+
+```bash
+# Gera uma senha forte de 12 caracteres e devolve senha + hash bcrypt
+brtools hash bcrypt --password
+
+# Senha com tamanho customizado (8 a 64)
+brtools hash bcrypt --password 20 --salt 12
+
+# Em JSON, para uso em scripts e seeds
+brtools hash bcrypt --password --json
+```
+
+```text
+Senha: d7Auf5ST-$a7
+Hash: $2b$10$z9MmiWaX9sWFP5.w28L7oeelWLdktjObh0i/bXmYquGt9E4yRd8xu
+```
+
+A senha segue o padrão forte mais comum: pelo menos uma letra maiúscula, uma
+minúscula, um dígito e um símbolo (`!@#$%&*?-_`), com no mínimo 8 caracteres
+(padrão 12) sorteados via `crypto.randomInt`. `--password` funciona com qualquer
+algoritmo e não pode ser combinado com `--text` ou `--file`.
+
 ### Comando Person
 
 #### Gerar dados unitários
@@ -212,6 +237,23 @@ brtools person email --name "João Silva"
 brtools person email --first-name "Maria" --surname "Souza" --domain empresa.com.br
 ```
 
+#### Gerar senha
+
+```bash
+# Senha forte de 12 caracteres
+brtools person password
+
+# Senha com tamanho customizado (8 a 64)
+brtools person password --length 20
+
+# Várias senhas de uma vez, em JSON
+brtools person password --count 5 --json
+```
+
+A senha segue o padrão forte mais comum — pelo menos uma letra maiúscula, uma
+minúscula, um dígito e um símbolo (`!@#$%&*?-_`) — com no mínimo 8 caracteres
+(padrão 12). Os caracteres são sorteados via `crypto.randomInt`, não `Math.random`.
+
 #### Gerar perfil completo
 
 ```bash
@@ -226,7 +268,15 @@ brtools person profile --gender feminino
 
 # Gerar o perfil de uma pessoa com nome definido por você
 brtools person profile --name "Thaís D'Ávila" --json
+
+# Ajustar a senha do perfil: tamanho e rounds do bcrypt
+brtools person profile --length 16 --salt 12 --json
 ```
+
+O perfil traz `password` (senha em texto, no padrão forte) e `passwordHash`
+(bcrypt da mesma senha), pensados para seed de banco: use o hash no insert e a
+senha para logar. `--salt` aceita de 4 a 15 rounds (padrão 10) — vale baixar em
+lotes grandes, já que cada perfil paga o custo de um bcrypt.
 
 O e-mail do perfil é derivado do nome, sorteando entre seis combinações
 (`joao.silva`, `joao_silva`, `joaosilva`, `j.silva`, `joao.s`, `silva.joao`),
@@ -249,6 +299,8 @@ e o resultado é limitado aos 64 caracteres do RFC 5321.
 | `-f, --formatted`            | Formata o documento no padrão brasileiro       |
 | `-g, --gender <gênero>`      | Gênero em `person`: masculino \| feminino \| m \| f |
 | `-n, --count <n>`            | Gera vários itens de uma vez (valores únicos)  |
+| `-p, --password [tamanho]`   | Em `hash`: gera uma senha forte e a hasheia    |
+| `-l, --length <tamanho>`     | Tamanho da senha em `person`: 8 a 64 (padrão 12) |
 | `--name <nome>`              | Nome completo usado por `person email/profile` |
 | `-v, --version`              | Mostra a versão da ferramenta                  |
 | `--help`                     | Mostra ajuda                                   |
@@ -267,10 +319,30 @@ brtools cnpj --generate --formatted --count 50 > cnpjs.txt
 
 # 10 perfis completos como array JSON
 brtools person profile --count 10 --json
+
+# 20 senhas fortes
+brtools person password --count 20
 ```
 
-Com `--json`, a saída é um array. O limite é 10.000 itens por execução, e
-`--count` só se aplica à geração — usar junto de `--validate` é erro.
+Com `--json` a saída é sempre um array — inclusive com `--count 1`, para não
+quebrar script que passa a quantidade por variável. Cada item é o valor gerado
+na sua forma natural: string nos geradores escalares, objeto em `person address`
+e `person profile`.
+
+```bash
+brtools cpf --generate --count 2 --json
+# ["51827689072","22390325530"]
+
+brtools person profile --count 2 --json
+# [{"fullName":"Bruno Souza","cpf":"...","address":{...},...}, {...}]
+```
+
+Em texto, registros de uma linha saem um por linha — seguro para `grep`, `wc` e
+pipe. Só registros de múltiplas linhas (`person profile`) ganham uma linha em
+branco entre si, para dar pra distinguir onde um termina e o outro começa.
+
+O limite é 10.000 itens por execução, e `--count` só se aplica à geração — usar
+junto de `--validate` é erro.
 
 ## 📥 Lendo do stdin
 

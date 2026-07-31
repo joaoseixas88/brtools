@@ -20,6 +20,10 @@ export class CliModule {
     return (args?.[0] as string) ?? '';
   }
 
+  protected async performValue(...args: unknown[]): Promise<unknown> {
+    return this.perform(...args);
+  }
+
   protected markInvalid() {
     this.exitCode = EXIT_INVALID;
   }
@@ -67,26 +71,35 @@ export class CliModule {
     });
   }
 
+  private dedupKey(value: unknown) {
+    return typeof value === 'string' ? value : JSON.stringify(value);
+  }
+
+  private joinRecords(records: string[]) {
+    return records.join(records.some((record) => record.includes('\n')) ? '\n\n' : '\n');
+  }
+
   private async performMany(count: number, args: unknown[], asJson: boolean) {
     const rawArgs = this.withoutJson(args);
-    const values = new Set<string>();
+    const items = new Map<string, unknown>();
     const maxAttempts = count * uniqueAttemptsPerItem;
     let attempts = 0;
 
-    while (values.size < count && attempts < maxAttempts) {
-      values.add(await this.perform(...rawArgs));
+    while (items.size < count && attempts < maxAttempts) {
+      const value = asJson ? await this.performValue(...rawArgs) : await this.perform(...rawArgs);
+      items.set(this.dedupKey(value), value);
       attempts++;
     }
 
-    if (values.size < count) {
+    if (items.size < count) {
       throw new ValidationException(
-        `Não foi possível gerar ${count} valores únicos. Máximo alcançado: ${values.size}`,
+        `Não foi possível gerar ${count} valores únicos. Máximo alcançado: ${items.size}`,
       );
     }
 
-    const items = [...values];
+    const values = [...items.values()];
 
-    return asJson ? JSON.stringify(items) : items.join('\n');
+    return asJson ? JSON.stringify(values) : this.joinRecords(values as string[]);
   }
 
   async handle(...args: unknown[]) {
@@ -94,7 +107,7 @@ export class CliModule {
       const options = this.findOptions(args);
       const count = this.resolveCount(options);
       const outputStr =
-        count > 1
+        options?.count !== undefined
           ? await this.performMany(count, args, Boolean(options?.json))
           : await this.perform(...args);
       const shouldCopy = options?.copy !== undefined;

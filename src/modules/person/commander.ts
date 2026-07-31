@@ -84,11 +84,20 @@ export default function (program: Command) {
     createAction('rg'),
   );
 
+  appendCommonOptions(
+    personCommand
+      .command('password')
+      .description('Gera uma senha forte (maiúscula, minúscula, dígito e símbolo)')
+      .option('-l, --length <length>', 'Quantidade de caracteres da senha: 8 a 64 (padrão 12)'),
+  ).action(createAction('password'));
+
   appendFormattableOptions(
     personCommand
       .command('profile')
       .description('Gera um perfil completo')
       .option('--name <name>', 'Nome completo da pessoa em vez de um gerado')
-      .option('-g, --gender <gender>', 'Gênero do perfil: masculino | feminino | m | f'),
+      .option('-g, --gender <gender>', 'Gênero do perfil: masculino | feminino | m | f')
+      .option('-l, --length <length>', 'Quantidade de caracteres da senha: 8 a 64 (padrão 12)')
+      .option('-s, --salt <salt>', 'Rounds do bcrypt para o hash da senha: 4 a 15 (padrão 10)'),
   ).action(createAction('profile'));
 }
