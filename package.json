@@ -1,6 +1,6 @@
 {
   "name": "@joaoseixas/brtools",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "A CLI tool to help you with your daily tasks",
   "bin": {
     "brtools": "dist/index.js"
