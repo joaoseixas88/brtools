@@ -16,5 +16,11 @@ export default function (program: Command) {
     .option('-s, --salt <salt>', 'Salt, caso o algoritmo seja bcrypt')
     .option('-f, --file <file>', 'Arquivo a ser hasheado')
     .option('-j, --json', 'Retorna o resultado em JSON')
+    .option('--cost <cost>', 'scrypt: fator de custo N, potência de 2 (padrão 16384)')
+    .option('--block-size <blockSize>', 'scrypt: tamanho do bloco r (padrão 8)')
+    .option('--parallelization <parallelization>', 'scrypt: paralelização p (padrão 1)')
+    .option('--salt-size <saltSize>', 'scrypt: bytes do salt aleatório, 8 a 1024 (padrão 16)')
+    .option('--key-length <keyLength>', 'scrypt: bytes do hash, 64 a 128 (padrão 64)')
+    .option('--max-memory <maxMemory>', 'scrypt: limite de memória em bytes (padrão 33554432)')
     .action(makeModule(HashModule));
 }
