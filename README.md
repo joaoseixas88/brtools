@@ -25,7 +25,6 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 - 🔐 **Múltiplos Algoritmos**: Suporte a bcrypt, scrypt, MD5, SHA256, SHA512 e Base64
 - 📄 **Texto e Arquivos**: Processa tanto textos quanto arquivos
 - ⚙️ **Salt Configurável**: Permite configurar o salt para bcrypt (padrão: 10)
-- 🅰️ **Compatível com AdonisJS**: `scrypt` gera a mesma PHC string do `@adonisjs/hash`
 - 🔒 **Hashes Seguros**: bcrypt/scrypt para senhas, SHA256/SHA512 para integridade
 - 🔑 **Gerador de Senha**: `--password` cria uma senha forte e devolve a senha junto do hash
 - 📋 **Cópia para Clipboard**: Copia automaticamente o hash gerado
@@ -126,7 +125,7 @@ brtools cnpj --digits 112223330001
 #### Algoritmos Disponíveis
 
 - **bcrypt**: Hash seguro para senhas (com salt configurável)
-- **scrypt**: Hash de senha no formato PHC, compatível com o `@adonisjs/hash`
+- **scrypt**: Hash de senha no formato PHC
 - **md5**: Hash MD5 (128 bits)
 - **sha256**: Hash SHA-256 (256 bits)
 - **sha512**: Hash SHA-512 (512 bits)
@@ -141,7 +140,7 @@ brtools hash bcrypt --text "minha senha"
 # Hash bcrypt com salt customizado
 brtools hash bcrypt --text "minha senha" --salt 12
 
-# Hash scrypt (formato PHC, igual ao AdonisJS)
+# Hash scrypt (formato PHC)
 brtools hash scrypt --text "minha senha"
 
 # Hash SHA-256 de um texto
@@ -199,11 +198,10 @@ minúscula, um dígito e um símbolo (`!@#$%&*?-_`), com no mínimo 8 caracteres
 (padrão 12) sorteados via `crypto.randomInt`. `--password` funciona com qualquer
 algoritmo e não pode ser combinado com `--text` ou `--file`.
 
-#### Hash compatível com AdonisJS (scrypt)
+#### Hash scrypt (formato PHC)
 
-O algoritmo `scrypt` produz a mesma PHC string do driver padrão do
-`@adonisjs/hash`, então o valor gerado aqui passa direto no `hash.verify()` da
-aplicação — útil para semear usuários no banco:
+O algoritmo `scrypt` devolve uma PHC string com os parâmetros embutidos no
+próprio hash — útil para semear usuários no banco:
 
 ```bash
 # Senha forte + hash pronto para o seed, em JSON
@@ -221,11 +219,10 @@ brtools hash scrypt --text "senha123"
 }
 ```
 
-Sem flags, os parâmetros são exatamente os defaults do Adonis, o que faz o
-`needsReHash()` da aplicação retornar `false`. Para bater com um
-`config/hash.ts` customizado, ajuste-os:
+Sem flags, o hash usa os parâmetros padrão abaixo. Para bater com uma
+configuração customizada, ajuste-os:
 
-| Flag                    | Config do Adonis  | Padrão     | Faixa válida                       |
+| Flag                    | Parâmetro         | Padrão     | Faixa válida                       |
 | ----------------------- | ----------------- | ---------- | ---------------------------------- |
 | `--cost <n>`            | `cost`            | `16384`    | potência de 2, a partir de 2       |
 | `--block-size <r>`      | `blockSize`       | `8`        | 1 ou mais                          |
@@ -335,25 +332,25 @@ e o resultado é limitado aos 64 caracteres do RFC 5321.
 
 ### Opções Globais
 
-| Opção                        | Descrição                                      |
-| ---------------------------- | ---------------------------------------------- |
-| `-g, --generate`             | Gera um CPF/CNPJ válido                        |
-| `-v, --validate <documento>` | Valida um CPF/CNPJ informado                   |
-| `-d, --digits <digits>`      | Calcula dígitos verificadores                  |
-| `-t, --text <texto>`         | Texto a ser hasheado                           |
-| `-f, --file <arquivo>`       | Arquivo a ser processado/hasheado              |
-| `-s, --salt <salt>`          | Salt para algoritmo bcrypt (padrão: 10)       |
-| `-c, --copy`                 | Copia o resultado para a área de transferência |
-| `-j, --json`                 | Retorna o resultado em JSON                    |
-| `-f, --formatted`            | Formata o documento no padrão brasileiro       |
+| Opção                        | Descrição                                           |
+| ---------------------------- | --------------------------------------------------- |
+| `-g, --generate`             | Gera um CPF/CNPJ válido                             |
+| `-v, --validate <documento>` | Valida um CPF/CNPJ informado                        |
+| `-d, --digits <digits>`      | Calcula dígitos verificadores                       |
+| `-t, --text <texto>`         | Texto a ser hasheado                                |
+| `-f, --file <arquivo>`       | Arquivo a ser processado/hasheado                   |
+| `-s, --salt <salt>`          | Salt para algoritmo bcrypt (padrão: 10)             |
+| `-c, --copy`                 | Copia o resultado para a área de transferência      |
+| `-j, --json`                 | Retorna o resultado em JSON                         |
+| `-f, --formatted`            | Formata o documento no padrão brasileiro            |
 | `-g, --gender <gênero>`      | Gênero em `person`: masculino \| feminino \| m \| f |
-| `-n, --count <n>`            | Gera vários itens de uma vez (valores únicos)  |
-| `-p, --password [tamanho]`   | Em `hash`: gera uma senha forte e a hasheia    |
-| `-l, --length <tamanho>`     | Tamanho da senha em `person`: 8 a 64 (padrão 12) |
-| `--cost`, `--block-size`...  | Parâmetros do `hash scrypt` (ver acima)        |
-| `--name <nome>`              | Nome completo usado por `person email/profile` |
-| `-v, --version`              | Mostra a versão da ferramenta                  |
-| `--help`                     | Mostra ajuda                                   |
+| `-n, --count <n>`            | Gera vários itens de uma vez (valores únicos)       |
+| `-p, --password [tamanho]`   | Em `hash`: gera uma senha forte e a hasheia         |
+| `-l, --length <tamanho>`     | Tamanho da senha em `person`: 8 a 64 (padrão 12)    |
+| `--cost`, `--block-size`...  | Parâmetros do `hash scrypt` (ver acima)             |
+| `--name <nome>`              | Nome completo usado por `person email/profile`      |
+| `-v, --version`              | Mostra a versão da ferramenta                       |
+| `--help`                     | Mostra ajuda                                        |
 
 ## 🔁 Geração em lote
 
@@ -418,11 +415,11 @@ Saída da validação em lote:
 
 ## ↩️ Códigos de saída
 
-| Código | Significado                                         |
-| ------ | --------------------------------------------------- |
-| `0`    | Sucesso — e, na validação, documento válido          |
-| `1`    | Documento inválido (qualquer linha, no modo lote)    |
-| `2`    | Erro de uso: opção inválida, entrada vazia, etc.     |
+| Código | Significado                                       |
+| ------ | ------------------------------------------------- |
+| `0`    | Sucesso — e, na validação, documento válido       |
+| `1`    | Documento inválido (qualquer linha, no modo lote) |
+| `2`    | Erro de uso: opção inválida, entrada vazia, etc.  |
 
 Isso permite usar a CLI em script:
 
@@ -509,7 +506,7 @@ src/
 ├── helpers/            # Funções utilitárias
 │   ├── numbers.ts      # Helpers para manipulação de números
 │   ├── password.ts     # Geração de senha forte e hash bcrypt
-│   └── scrypt.ts       # scrypt em formato PHC, compatível com o AdonisJS
+│   └── scrypt.ts       # scrypt em formato PHC
 ├── modules/            # Módulos funcionais
 │   ├── cpf/           # Módulo de operações com CPF
 │   │   ├── index.ts   # Lógica principal do CPF
@@ -668,7 +665,7 @@ export default function (program: Command) {
 - **Chalk**: Colorização de output
 - **Copy-paste**: Funcionalidade de clipboard
 - **bcryptjs**: Biblioteca para hash seguro de senhas sem dependência nativa
-- **node:crypto**: scrypt e geração de salt para o hash compatível com o AdonisJS
+- **node:crypto**: scrypt e geração de salt para o hash de senha
 - **Jest**: Framework de testes
 - **Node.js**: Runtime
 
