@@ -22,10 +22,11 @@ Uma ferramenta CLI moderna para utilitários brasileiros, desenvolvida para faci
 
 ### Hash
 
-- 🔐 **Múltiplos Algoritmos**: Suporte a bcrypt, MD5, SHA256, SHA512 e Base64
+- 🔐 **Múltiplos Algoritmos**: Suporte a bcrypt, scrypt, MD5, SHA256, SHA512 e Base64
 - 📄 **Texto e Arquivos**: Processa tanto textos quanto arquivos
 - ⚙️ **Salt Configurável**: Permite configurar o salt para bcrypt (padrão: 10)
-- 🔒 **Hashes Seguros**: bcrypt para senhas, SHA256/SHA512 para integridade
+- 🅰️ **Compatível com AdonisJS**: `scrypt` gera a mesma PHC string do `@adonisjs/hash`
+- 🔒 **Hashes Seguros**: bcrypt/scrypt para senhas, SHA256/SHA512 para integridade
 - 🔑 **Gerador de Senha**: `--password` cria uma senha forte e devolve a senha junto do hash
 - 📋 **Cópia para Clipboard**: Copia automaticamente o hash gerado
 
@@ -125,6 +126,7 @@ brtools cnpj --digits 112223330001
 #### Algoritmos Disponíveis
 
 - **bcrypt**: Hash seguro para senhas (com salt configurável)
+- **scrypt**: Hash de senha no formato PHC, compatível com o `@adonisjs/hash`
 - **md5**: Hash MD5 (128 bits)
 - **sha256**: Hash SHA-256 (256 bits)
 - **sha512**: Hash SHA-512 (512 bits)
@@ -138,6 +140,9 @@ brtools hash bcrypt --text "minha senha"
 
 # Hash bcrypt com salt customizado
 brtools hash bcrypt --text "minha senha" --salt 12
+
+# Hash scrypt (formato PHC, igual ao AdonisJS)
+brtools hash scrypt --text "minha senha"
 
 # Hash SHA-256 de um texto
 brtools hash sha256 --text "dados importantes"
@@ -193,6 +198,50 @@ A senha segue o padrão forte mais comum: pelo menos uma letra maiúscula, uma
 minúscula, um dígito e um símbolo (`!@#$%&*?-_`), com no mínimo 8 caracteres
 (padrão 12) sorteados via `crypto.randomInt`. `--password` funciona com qualquer
 algoritmo e não pode ser combinado com `--text` ou `--file`.
+
+#### Hash compatível com AdonisJS (scrypt)
+
+O algoritmo `scrypt` produz a mesma PHC string do driver padrão do
+`@adonisjs/hash`, então o valor gerado aqui passa direto no `hash.verify()` da
+aplicação — útil para semear usuários no banco:
+
+```bash
+# Senha forte + hash pronto para o seed, em JSON
+brtools hash scrypt --password --json
+
+# Hash de uma senha específica
+brtools hash scrypt --text "senha123"
+```
+
+```json
+{
+  "algorithm": "scrypt",
+  "password": "8tht?v$4VY6C",
+  "hash": "$scrypt$n=16384,r=8,p=1$1Jlbga8EhQwUHIdvDNHlcg$MICJwl8JB8GsyLqER4Kykxl..."
+}
+```
+
+Sem flags, os parâmetros são exatamente os defaults do Adonis, o que faz o
+`needsReHash()` da aplicação retornar `false`. Para bater com um
+`config/hash.ts` customizado, ajuste-os:
+
+| Flag                    | Config do Adonis  | Padrão     | Faixa válida                       |
+| ----------------------- | ----------------- | ---------- | ---------------------------------- |
+| `--cost <n>`            | `cost`            | `16384`    | potência de 2, a partir de 2       |
+| `--block-size <r>`      | `blockSize`       | `8`        | 1 ou mais                          |
+| `--parallelization <p>` | `parallelization` | `1`        | 1 ou mais                          |
+| `--salt-size <bytes>`   | `saltSize`        | `16`       | 8 a 1024                           |
+| `--key-length <bytes>`  | `keyLength`       | `64`       | 64 a 128                           |
+| `--max-memory <bytes>`  | `maxMemory`       | `33554432` | maior que `128 × cost × blockSize` |
+
+```bash
+# Mesmo config de uma app que subiu o custo
+brtools hash scrypt --text "senha123" --cost 32768 --max-memory 67108864
+```
+
+Cada hash com o custo padrão leva algumas dezenas de milissegundos; para gerar
+muitos de uma vez, vale baixar o `--cost`. O `--salt` (rounds) é exclusivo do
+bcrypt e é ignorado pelo scrypt, que sorteia o próprio salt a cada execução.
 
 ### Comando Person
 
@@ -301,6 +350,7 @@ e o resultado é limitado aos 64 caracteres do RFC 5321.
 | `-n, --count <n>`            | Gera vários itens de uma vez (valores únicos)  |
 | `-p, --password [tamanho]`   | Em `hash`: gera uma senha forte e a hasheia    |
 | `-l, --length <tamanho>`     | Tamanho da senha em `person`: 8 a 64 (padrão 12) |
+| `--cost`, `--block-size`...  | Parâmetros do `hash scrypt` (ver acima)        |
 | `--name <nome>`              | Nome completo usado por `person email/profile` |
 | `-v, --version`              | Mostra a versão da ferramenta                  |
 | `--help`                     | Mostra ajuda                                   |
@@ -457,7 +507,9 @@ src/
 ├── exceptions/          # Exceções customizadas
 │   └── Validation.ts   # Tratamento de erros de validação
 ├── helpers/            # Funções utilitárias
-│   └── numbers.ts      # Helpers para manipulação de números
+│   ├── numbers.ts      # Helpers para manipulação de números
+│   ├── password.ts     # Geração de senha forte e hash bcrypt
+│   └── scrypt.ts       # scrypt em formato PHC, compatível com o AdonisJS
 ├── modules/            # Módulos funcionais
 │   ├── cpf/           # Módulo de operações com CPF
 │   │   ├── index.ts   # Lógica principal do CPF
@@ -489,7 +541,7 @@ src/
 - **CliModule**: Classe abstrata que define a interface para todos os módulos
 - **CPF Module**: Implementa todas as operações relacionadas a CPF
 - **CNPJ Module**: Implementa todas as operações relacionadas a CNPJ
-- **Hash Module**: Implementa hash de textos e arquivos com múltiplos algoritmos (bcrypt, MD5, SHA256, SHA512, Base64)
+- **Hash Module**: Implementa hash de textos e arquivos com múltiplos algoritmos (bcrypt, scrypt, MD5, SHA256, SHA512, Base64)
 - **Person Module**: Implementa geração de dados pessoais brasileiros unitários e em perfil completo
 - **Logger Service**: Fornece logging colorido com chalk
 - **ValidationException**: Tratamento especializado de erros de validação
@@ -616,6 +668,7 @@ export default function (program: Command) {
 - **Chalk**: Colorização de output
 - **Copy-paste**: Funcionalidade de clipboard
 - **bcryptjs**: Biblioteca para hash seguro de senhas sem dependência nativa
+- **node:crypto**: scrypt e geração de salt para o hash compatível com o AdonisJS
 - **Jest**: Framework de testes
 - **Node.js**: Runtime
 
