@@ -1,13 +1,14 @@
 import { createHash } from 'crypto';
 import { ValidationException } from '../../exceptions/Validation';
 import { CliModule } from '../module';
-import { AlgorithmTypes } from './types';
+import { AlgorithmTypes, availableAlgorithms } from './types';
 import { hash } from 'bcryptjs';
 import { isStdinSentinel, readStdin } from '../../helpers/stdin';
 import { generatePassword, resolvePasswordLength } from '../../helpers/password';
+import { resolveScryptConfig, ScryptConfigOptions, scryptHash } from '../../helpers/scrypt';
 import fs from 'fs';
 
-type HashOptions = {
+type HashOptions = ScryptConfigOptions & {
   text?: string;
   file?: string;
   salt?: number;
@@ -58,6 +59,8 @@ export class HashModule extends CliModule {
     switch (algorithm) {
       case 'bcrypt':
         return this.bcrypt(options);
+      case 'scrypt':
+        return this.scrypt(options);
       case 'md5':
         return this.md5(options);
       case 'sha256':
@@ -80,12 +83,25 @@ export class HashModule extends CliModule {
   }
 
   private validateAlgo(algorithm: string) {
-    const availableAlgos = ['bcrypt', 'md5', 'sha256', 'sha512', 'base64'];
-    if (!availableAlgos.includes(algorithm)) {
+    if (!(availableAlgorithms as readonly string[]).includes(algorithm)) {
       throw new ValidationException(
-        `Algoritmo não encontrado. Disponíveis: < ${availableAlgos.join(' | ')} >`,
+        `Algoritmo não encontrado. Disponíveis: < ${availableAlgorithms.join(' | ')} >`,
       );
     }
+  }
+
+  private readTextInput(options: HashOptions) {
+    if (options.text) {
+      return options.text;
+    }
+
+    if (options.file) {
+      return fs.readFileSync(options.file, 'utf8');
+    }
+
+    throw new ValidationException(
+      'Texto ou arquivo obrigatório. Digite o texto com --text <value> ou o arquivo com --file <value>',
+    );
   }
 
   async bcrypt(options: HashOptions) {
@@ -95,6 +111,10 @@ export class HashModule extends CliModule {
     }
     const hashValue = await hash(options.text, salt);
     return hashValue;
+  }
+
+  async scrypt(options: HashOptions) {
+    return scryptHash(this.readTextInput(options), resolveScryptConfig(options));
   }
 
   async md5(options: HashOptions) {
